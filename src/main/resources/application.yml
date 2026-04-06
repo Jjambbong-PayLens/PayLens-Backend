@@ -1,0 +1,32 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  profiles:
+    active: local
+
+  datasource:
+    url: ${LOCAL_DB_URL}
+    username: ${LOCAL_DB_USERNAME}
+    password: ${LOCAL_DB_PASSWORD}
+
+# AWS S3 Settings
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY:none}
+      secret-key: ${AWS_SECRET_KEY:none}
+    region: ${AWS_REGION:ap-northeast-2}
+    s3:
+      bucket: ${AWS_S3_BUCKET:none}
+      path:
+        location: ${AWS_S3_PATH:none}
+
+#Swagger
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+    operations-sorter: method

@@ -1,7 +1,7 @@
 package com.Jjambbong.PayLens.global.exception;
 
-import likelion14th.lte.global.api.BaseCode;
-import likelion14th.lte.global.api.ReasonDTO;
+import com.Jjambbong.PayLens.global.api.BaseCode;
+import com.Jjambbong.PayLens.global.api.ReasonDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

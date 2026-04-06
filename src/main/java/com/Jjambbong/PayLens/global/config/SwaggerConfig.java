@@ -19,8 +19,8 @@ public class SwaggerConfig {
     public OpenAPI openAPI() {
         Info apiInfo = new Info()
                 .version("v1.0.0")
-                .title("LTE API")
-                .description("Lte API Documentation");
+                .title("PayLens API")
+                .description("PayLens API Documentation");
 
         String jwtSchemeName = "BearerToken";
         SecurityRequirement securityRequirement = new SecurityRequirement().addList(jwtSchemeName);
@@ -33,11 +33,11 @@ public class SwaggerConfig {
 
         Server localServer = new Server()
                 .url("http://localhost:8080")
-                .description("Lte Local Server");
+                .description("PayLens Local Server");
 
         Server httpServer = new Server()
-                .url("http://Lte-dev-env-2.eba-xaqgpxhu.ap-northeast-2.elasticbeanstalk.com")
-                .description("LTE HTTP Server");
+                .url("") // 배포 서버
+                .description("PayLens HTTP Server");
 
         return new OpenAPI()
                 .info(apiInfo)
