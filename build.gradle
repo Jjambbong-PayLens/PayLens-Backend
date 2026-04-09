@@ -42,14 +42,19 @@ dependencies {
 	// MySQL
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
-	//env
+	// env
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 
-	//aws
+	// aws
 	implementation platform('software.amazon.awssdk:bom:2.25.60')
 	implementation 'software.amazon.awssdk:s3'
 	implementation "software.amazon.awssdk:auth"
 	implementation "software.amazon.awssdk:sts"
+
+	// jwt
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
