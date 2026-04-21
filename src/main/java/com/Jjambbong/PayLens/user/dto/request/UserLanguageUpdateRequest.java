@@ -1,7 +1,8 @@
 package com.Jjambbong.PayLens.user.dto.request;
 
+import com.Jjambbong.PayLens.user.domain.Language;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserLanguageUpdateRequest {
 
-    @NotBlank(message = "언어 코드는 비워둘 수 없습니다.")
-    @Schema(description = "선호 언어 코드 (예: ko, en, vi)", example = "en")
-    private String language;
+    @NotNull(message = "언어 코드는 비워둘 수 없습니다.")
+    @Schema(description = "선호 언어 (예: KO, EN, VI)", example = "EN")
+    private Language language;
 }

@@ -1,5 +1,6 @@
 package com.Jjambbong.PayLens.login.service;
 
+import com.Jjambbong.PayLens.user.domain.Language;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import com.Jjambbong.PayLens.global.api.ErrorCode;
@@ -70,6 +71,7 @@ public class AuthService {
                 .email(email) // User 엔티티에 email이 nullable=false이므로 추가
                 .role(UserRole.USER) // Role 기본값 추가
                 .status(UserStatus.ACTIVE) // Status 기본값 추가
+                .preferredLanguage(Language.KO) // 기본 언어 설정 추가
                 .build();
 
         return userRepository.save(user);
