@@ -26,6 +26,16 @@ public enum ErrorCode implements BaseCode { // 실패
     KAKAO_AUTH_FAILED(HttpStatus.UNAUTHORIZED, "KAKAO_4011", "카카오 인증에 실패했습니다."),
     KAKAO_API_FAILED(HttpStatus.BAD_GATEWAY, "KAKAO_5021", "카카오 서버 응답에 실패했습니다."),
 
+    // Document
+    DOCUMENT_INVALID_FILE_NAME(HttpStatus.BAD_REQUEST, "DOCUMENT_4001", "올바르지 않은 파일명입니다."),
+    DOCUMENT_CONTENT_TYPE_NOT_ALLOWED(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "DOCUMENT_4151", "허용되지 않은 파일 형식입니다."),
+    DOCUMENT_TYPE_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4002", "올바르지 않은 문서 유형입니다."),
+    DOCUMENT_UPLOAD_NOT_READY(HttpStatus.CONFLICT, "DOCUMENT_4091", "업로드 완료 처리할 수 없는 문서 상태입니다."),
+    DOCUMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "DOCUMENT_4041", "문서를 찾을 수 없습니다."),
+    DOCUMENT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "DOCUMENT_4031", "해당 문서에 접근할 권한이 없습니다."),
+    DOCUMENT_OBJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "DOCUMENT_4042", "S3에서 업로드된 파일을 찾을 수 없습니다."),
+    PRESIGNED_URL_GENERATION_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "DOCUMENT_5031", "문서 업로드 URL 발급에 실패했습니다."),
+
     // YouTube
     YOUTUBE_API_FAILED(HttpStatus.BAD_GATEWAY, "YOUTUBE_API_FAILED", "YouTube API 호출에 실패했습니다."),
     SONG_ALREADY_SAVED(HttpStatus.CONFLICT, "SONG_ALREADY_SAVED", "이미 저장된 곡입니다."),
