@@ -18,6 +18,9 @@ public enum SuccessCode implements BaseCode { // 성공
     USER_INFO_GET_SUCCESS(HttpStatus.OK, "USER_2007", "유저 정보 조회가 완료되었습니다."),
     USER_LANGUAGE_UPDATE_SUCCESS(HttpStatus.OK, "USER_2004", "사용자 언어 설정이 변경되었습니다."), // 추가된 코드
 
+    DOCUMENT_UPLOAD_URL_CREATED(HttpStatus.CREATED, "DOCUMENT_2011", "문서 업로드 URL이 발급되었습니다."),
+    DOCUMENT_UPLOAD_COMPLETE_SUCCESS(HttpStatus.OK, "DOCUMENT_2001", "문서 업로드가 완료되었습니다."),
+
     FOLLOW_ADD_SUCCESS(HttpStatus.CREATED,"FOLLOW_2011","팔로우 추가가 완료되었습니다."),
     FOLLOW_DELETE_SUCCESS(HttpStatus.OK, "FOLLOW_2001", "언팔로우가 완료되었습니다."),
     FOLLOW_LIST_GET_SUCCESS(HttpStatus.OK, "FOLLOW_2002", "팔로우 목록 조회가 완료되었습니다."),
