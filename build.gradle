@@ -41,6 +41,7 @@ dependencies {
 
 	// MySQL
 	runtimeOnly 'com.mysql:mysql-connector-j'
+	testRuntimeOnly 'com.h2database:h2'
 
 	// env
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
