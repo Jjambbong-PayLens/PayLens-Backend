@@ -21,11 +21,8 @@ public enum SuccessCode implements BaseCode { // 성공
     DOCUMENT_UPLOAD_URL_CREATED(HttpStatus.CREATED, "DOCUMENT_2011", "문서 업로드 URL이 발급되었습니다."),
     DOCUMENT_UPLOAD_COMPLETE_SUCCESS(HttpStatus.OK, "DOCUMENT_2001", "문서 업로드가 완료되었습니다."),
 
-    FOLLOW_ADD_SUCCESS(HttpStatus.CREATED,"FOLLOW_2011","팔로우 추가가 완료되었습니다."),
-    FOLLOW_DELETE_SUCCESS(HttpStatus.OK, "FOLLOW_2001", "언팔로우가 완료되었습니다."),
-    FOLLOW_LIST_GET_SUCCESS(HttpStatus.OK, "FOLLOW_2002", "팔로우 목록 조회가 완료되었습니다."),
-    FOLLOW_SEARCH_SUCCESS(HttpStatus.OK, "FOLLOW_2003", "팔로우 가능한 유저 검색이 완료되었습니다."),
-
+    // gemini
+    DOCUMENT_ANALYZE_SUCCESS(HttpStatus.OK, "DOCUMENT_2002", "문서 분석이 완료되었습니다"),
 
     // profile success
     PROFILE_PUT_SUCCESS(HttpStatus.OK, "PROFILE_2001", "프로필 수정(추가)이 완료되었습니다."),
