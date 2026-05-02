@@ -37,6 +37,7 @@ public class GeminiService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
+
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.DOCUMENT_NOT_FOUND));
 
@@ -47,24 +48,103 @@ public class GeminiService {
         String base64Pdf = analyzeService.getDocumentAsBase64(document);
         byte[] pdfBytes = Base64.getDecoder().decode(base64Pdf);
 
-        String targetLanguage = user.getPreferredLanguage().getDescription();
+        String targetLanguage = user.getPreferredLanguage() != null
+                ? user.getPreferredLanguage().getDescription()
+                : "한국어";
+
         String prompt = String.format(
-                "첨부된 급여명세서(또는 문서)를 분석해서 주요 항목과 금액을 JSON 형식으로 추출해줘. " +
-                        "반드시 모든 키와 값의 언어는 '%s'로 작성해야 해. JSON 외의 다른 설명은 하지 마.",
+                """
+                첨부 문서를 분석하여 임금체불 가능성을 JSON 형식으로 추출해줘.
+                모든 키와 값의 언어는 "%s"로 작성해줘.
+                JSON 외의 설명은 하지 마.
+
+                분석 항목:
+                1. 최저임금 및 주휴수당
+                2. 퇴직금 미지급
+                3. 야간근로수당 및 휴업수당
+                4. 초과근로수당, 휴일근로수당, 연차수당
+                5. 필요한 증거와 부족한 자료
+
+                판단 기준:
+                - 최저시급은 10,320원으로 판단해.
+                - 주 15시간 이상 근로 여부를 확인해.
+                - 5인 이상 사업장 여부를 확인해.
+                - 근로시간, 급여액, 입금액, 수당 지급 여부를 확인해.
+                - 확인할 수 없는 항목은 null로 작성해.
+                - 근거가 부족하면 "판단불가" 또는 "추가자료필요"로 작성해.
+                - 임금체불이라고 단정하지 말고 가능성 중심으로 분석해.
+
+                응답 형식:
+                {
+                  "문서요약": {
+                    "문서유형": null,
+                    "근로자명": null,
+                    "사업장명": null,
+                    "확인된기간": null,
+                    "분석요약": null
+                  },
+                  "공통추출항목": {
+                    "시급": null,
+                    "최저시급": 10320,
+                    "주당근로시간": null,
+                    "일일근로시간": null,
+                    "재직시작일": null,
+                    "재직종료일": null,
+                    "퇴사일": null,
+                    "급여지급일": null,
+                    "기본급": null,
+                    "총지급액": null,
+                    "총공제액": null,
+                    "실수령액": null,
+                    "입금액": null,
+                    "사업장근로자수_5인이상여부": null
+                  },
+                  "임금체불분석": {
+                    "최저임금및주휴수당": {
+                      "위반가능성": null,
+                      "판단근거": [],
+                      "부족한증거": []
+                    },
+                    "퇴직금미지급": {
+                      "미지급가능성": null,
+                      "예상퇴직금": null,
+                      "판단근거": [],
+                      "부족한증거": []
+                    },
+                    "야간근로수당및휴업수당": {
+                      "미지급가능성": null,
+                      "판단근거": [],
+                      "부족한증거": []
+                    },
+                    "초과근로수당휴일근로수당연차수당": {
+                      "미지급가능성": null,
+                      "판단근거": [],
+                      "부족한증거": []
+                    }
+                  },
+                  "최종판단": {
+                    "임금체불가능성": null,
+                    "가장의심되는항목": [],
+                    "추가로필요한자료": [],
+                    "사용자에게보여줄설명": null,
+                    "주의문구": "본 분석은 AI의 1차 검토 결과이며 법률적 판단이 아닙니다."
+                  }
+                }
+                """,
                 targetLanguage
         );
 
         try {
-            // application.yml의 값을 명시적으로 주입
             Client client = Client.builder()
                     .apiKey(geminiApiKey)
                     .build();
 
             Part textPart = Part.builder().text(prompt).build();
+
             Part pdfPart = Part.builder()
                     .inlineData(Blob.builder()
                             .mimeType("application/pdf")
-                            .data(base64Pdf) // 변환 없이 String 그대로 삽입
+                            .data(base64Pdf)
                             .build())
                     .build();
 
