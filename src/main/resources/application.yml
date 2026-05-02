@@ -6,8 +6,8 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # ?????? ?? ? ???? DB ???? ???? ????? ??
-    show-sql: true # JPA? ???? SQL? ??? ???
+      ddl-auto: update
+    show-sql: true
 
   security:
     oauth2:
@@ -69,3 +69,8 @@ jwt:
   secret: ${JWT_SECRET}
   access-exp-ms: ${JWT_EXPIRATION:3600000}
   refresh-exp-ms: ${JWT_REFRESH_EXPIRATION:1209600000}
+
+#Gemini
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}
