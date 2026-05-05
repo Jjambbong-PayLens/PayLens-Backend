@@ -27,6 +27,9 @@ public enum ErrorCode implements BaseCode { // 실패
     KAKAO_API_FAILED(HttpStatus.BAD_GATEWAY, "KAKAO_5021", "카카오 서버 응답에 실패했습니다."),
 
     // Document
+    DOCUMENT_UPLOAD_FILE_COUNT_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4003", "문서 업로드 파일 개수는 1개 이상 10개 이하이어야 합니다."),
+    DOCUMENT_COMPLETE_COUNT_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4004", "완료 처리할 문서 개수는 1개 이상 10개 이하이어야 합니다."),
+    DOCUMENT_DELETE_COUNT_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4005", "삭제할 문서 개수는 1개 이상 10개 이하이어야 합니다."),
     DOCUMENT_INVALID_FILE_NAME(HttpStatus.BAD_REQUEST, "DOCUMENT_4001", "올바르지 않은 파일명입니다."),
     DOCUMENT_CONTENT_TYPE_NOT_ALLOWED(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "DOCUMENT_4151", "허용되지 않은 파일 형식입니다."),
     DOCUMENT_TYPE_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4002", "올바르지 않은 문서 유형입니다."),
