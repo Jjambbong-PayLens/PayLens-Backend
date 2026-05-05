@@ -4,11 +4,22 @@ spring:
   profiles:
     active: local
 
+  # 1. JPA 설정
   jpa:
     hibernate:
-      ddl-auto: update # ?????? ?? ? ???? DB ???? ???? ????? ??
-    show-sql: true # JPA? ???? SQL? ??? ???
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
+  # 2. 데이터베이스 연결 정보
+  datasource:
+    url: ${LOCAL_DB_URL}
+    username: ${LOCAL_DB_USERNAME}
+    password: ${LOCAL_DB_PASSWORD}
+
+  # 3. 보안 및 소셜 로그인 (카카오 설정)
   security:
     oauth2:
       client:
@@ -16,7 +27,7 @@ spring:
           kakao:
             client-id: ${KAKAO_REST_API_KEY}
             client-secret: ${KAKAO_CLIENT_SECRET}
-            redirect-uri : http://localhost:8080/login/oauth2/code/kakao
+            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
             authorization-grant-type: authorization_code
             client-authentication-method: client_secret_post
             scope:
@@ -28,18 +39,15 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
+
+  # 4. 파일 업로드 설정
   servlet:
     multipart:
       enabled: true
       max-file-size: 50MB
       max-request-size: 50MB
 
-  datasource:
-    url: ${LOCAL_DB_URL}
-    username: ${LOCAL_DB_USERNAME}
-    password: ${LOCAL_DB_PASSWORD}
-
-# AWS S3 Settings
+# 5. AWS S3 설정
 cloud:
   aws:
     credentials:
@@ -51,17 +59,16 @@ cloud:
       path:
         location: ${AWS_S3_PATH:none}
 
-#Swagger
+# 6. Swagger(API 명세서) 설정
 springdoc:
   api-docs:
     path: /v3/api-docs
-
   swagger-ui:
     path: /swagger-ui.html
     display-request-duration: true
     operations-sorter: method
 
-#JWT
+# 7. JWT 설정
 jwt:
   secret: ${JWT_SECRET}
   access-exp-ms: ${JWT_EXPIRATION:3600000}
