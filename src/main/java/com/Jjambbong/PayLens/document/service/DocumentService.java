@@ -2,9 +2,18 @@ package com.Jjambbong.PayLens.document.service;
 
 import com.Jjambbong.PayLens.document.domain.Document;
 import com.Jjambbong.PayLens.document.domain.DocumentStatus;
+import com.Jjambbong.PayLens.document.dto.request.DocumentCompleteRequest;
+import com.Jjambbong.PayLens.document.dto.request.DocumentDeleteRequest;
 import com.Jjambbong.PayLens.document.dto.request.DocumentUploadUrlRequest;
+import com.Jjambbong.PayLens.document.dto.request.DocumentUploadUrlsRequest;
+import com.Jjambbong.PayLens.document.dto.response.DocumentCompleteListResponse;
 import com.Jjambbong.PayLens.document.dto.response.DocumentCompleteResponse;
+import com.Jjambbong.PayLens.document.dto.response.DocumentDeleteListResponse;
+import com.Jjambbong.PayLens.document.dto.response.DocumentDeleteResponse;
+import com.Jjambbong.PayLens.document.dto.response.DocumentListItemResponse;
+import com.Jjambbong.PayLens.document.dto.response.DocumentListResponse;
 import com.Jjambbong.PayLens.document.dto.response.DocumentUploadUrlResponse;
+import com.Jjambbong.PayLens.document.dto.response.DocumentUploadUrlsResponse;
 import com.Jjambbong.PayLens.document.repository.DocumentRepository;
 import com.Jjambbong.PayLens.global.api.ErrorCode;
 import com.Jjambbong.PayLens.global.config.AmazonConfig;
@@ -13,6 +22,7 @@ import com.Jjambbong.PayLens.user.domain.User;
 import com.Jjambbong.PayLens.user.repository.UserRepository;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -34,6 +45,9 @@ public class DocumentService {
 
     private static final long UPLOAD_URL_EXPIRATION_SECONDS = 600L;
     private static final String DEFAULT_BASE_PATH = "documents";
+    private static final int MAX_UPLOAD_FILE_COUNT = 10;
+    private static final int MAX_COMPLETE_DOCUMENT_COUNT = 10;
+    private static final int MAX_DELETE_DOCUMENT_COUNT = 10;
 
     private final DocumentRepository documentRepository;
     private final UserRepository userRepository;
@@ -44,6 +58,24 @@ public class DocumentService {
 
     public DocumentUploadUrlResponse createUploadUrl(Long userId, DocumentUploadUrlRequest request) {
         User user = getUser(userId);
+        return createUploadUrl(user, request);
+    }
+
+    public DocumentUploadUrlsResponse createUploadUrls(Long userId, DocumentUploadUrlsRequest request) {
+        User user = getUser(userId);
+        List<DocumentUploadUrlRequest> files = validateUploadFiles(request);
+
+        List<DocumentUploadUrlResponse> responses = files.stream()
+                .map(file -> createUploadUrl(user, file))
+                .toList();
+
+        return DocumentUploadUrlsResponse.builder()
+                .files(responses)
+                .count(responses.size())
+                .build();
+    }
+
+    private DocumentUploadUrlResponse createUploadUrl(User user, DocumentUploadUrlRequest request) {
         DocumentUploadFile uploadFile = documentUploadPolicy.validate(request);
 
         String storedFileName = UUID.randomUUID() + "_" + uploadFile.sanitizedFileName();
@@ -70,14 +102,70 @@ public class DocumentService {
                 .build();
     }
 
+    private List<DocumentUploadUrlRequest> validateUploadFiles(DocumentUploadUrlsRequest request) {
+        if (request == null || request.getFiles() == null
+                || request.getFiles().isEmpty()
+                || request.getFiles().size() > MAX_UPLOAD_FILE_COUNT) {
+            throw new GeneralException(ErrorCode.DOCUMENT_UPLOAD_FILE_COUNT_INVALID);
+        }
+        return request.getFiles();
+    }
+
     public DocumentCompleteResponse completeUpload(Long userId, Long documentId) {
         User user = getUser(userId);
-        Document document = documentRepository.findById(documentId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.DOCUMENT_NOT_FOUND));
+        return completeUpload(user, documentId);
+    }
 
-        if (!document.getUser().getId().equals(user.getId())) {
-            throw new GeneralException(ErrorCode.DOCUMENT_ACCESS_DENIED);
-        }
+    public DocumentCompleteListResponse completeUploads(Long userId, DocumentCompleteRequest request) {
+        User user = getUser(userId);
+        List<Long> documentIds = validateCompleteDocumentIds(request);
+
+        List<DocumentCompleteResponse> responses = documentIds.stream()
+                .map(documentId -> completeUpload(user, documentId))
+                .toList();
+
+        return DocumentCompleteListResponse.builder()
+                .documents(responses)
+                .count(responses.size())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public DocumentListResponse getUploadedDocuments(Long userId) {
+        User user = getUser(userId);
+        List<DocumentListItemResponse> documents = documentRepository
+                .findByUserAndStatusOrderByCreatedAtDesc(user, DocumentStatus.UPLOADED)
+                .stream()
+                .map(DocumentListItemResponse::from)
+                .toList();
+
+        return DocumentListResponse.builder()
+                .documents(documents)
+                .count(documents.size())
+                .build();
+    }
+
+    public DocumentDeleteListResponse deleteDocuments(Long userId, DocumentDeleteRequest request) {
+        User user = getUser(userId);
+        List<Long> documentIds = validateDeleteDocumentIds(request);
+        List<Document> documents = documentIds.stream()
+                .map(documentId -> findOwnedDocument(user, documentId))
+                .toList();
+        List<DocumentDeleteResponse> responses = documents.stream()
+                .map(DocumentDeleteResponse::from)
+                .toList();
+
+        documents.forEach(document -> deleteS3Object(document.getObjectKey()));
+        documentRepository.deleteAll(documents);
+
+        return DocumentDeleteListResponse.builder()
+                .documents(responses)
+                .count(responses.size())
+                .build();
+    }
+
+    private DocumentCompleteResponse completeUpload(User user, Long documentId) {
+        Document document = findOwnedDocument(user, documentId);
 
         if (document.getStatus() != DocumentStatus.UPLOAD_READY) {
             throw new GeneralException(ErrorCode.DOCUMENT_UPLOAD_NOT_READY);
@@ -87,6 +175,36 @@ public class DocumentService {
         document.completeUpload();
 
         return DocumentCompleteResponse.from(document);
+    }
+
+    private List<Long> validateCompleteDocumentIds(DocumentCompleteRequest request) {
+        if (request == null || request.getDocumentIds() == null
+                || request.getDocumentIds().isEmpty()
+                || request.getDocumentIds().size() > MAX_COMPLETE_DOCUMENT_COUNT) {
+            throw new GeneralException(ErrorCode.DOCUMENT_COMPLETE_COUNT_INVALID);
+        }
+        return request.getDocumentIds();
+    }
+
+    private List<Long> validateDeleteDocumentIds(DocumentDeleteRequest request) {
+        if (request == null || request.getDocumentIds() == null
+                || request.getDocumentIds().isEmpty()
+                || request.getDocumentIds().size() > MAX_DELETE_DOCUMENT_COUNT
+                || request.getDocumentIds().stream().anyMatch(documentId -> documentId == null)
+                || request.getDocumentIds().stream().distinct().count() != request.getDocumentIds().size()) {
+            throw new GeneralException(ErrorCode.DOCUMENT_DELETE_COUNT_INVALID);
+        }
+        return request.getDocumentIds();
+    }
+
+    private Document findOwnedDocument(User user, Long documentId) {
+        Document document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.DOCUMENT_NOT_FOUND));
+
+        if (!document.getUser().getId().equals(user.getId())) {
+            throw new GeneralException(ErrorCode.DOCUMENT_ACCESS_DENIED);
+        }
+        return document;
     }
 
     private User getUser(Long userId) {
@@ -152,6 +270,17 @@ public class DocumentService {
             throw new GeneralException(ErrorCode.S3_UPLOAD_FAILED);
         } catch (SdkClientException e) {
             throw new GeneralException(ErrorCode.S3_UPLOAD_FAILED);
+        }
+    }
+
+    private void deleteS3Object(String objectKey) {
+        try {
+            s3Client.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(amazonConfig.getBucket())
+                    .key(objectKey)
+                    .build());
+        } catch (AwsServiceException | SdkClientException e) {
+            throw new GeneralException(ErrorCode.S3_DELETE_FAILED);
         }
     }
 }
