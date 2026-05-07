@@ -33,12 +33,13 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 20)
     private UserStatus status;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "preferred_language", length = 10)
-    private String preferredLanguage;
+    private Language preferredLanguage;
 
     @Builder
     public User(String providerId, String email, String username, UserRole role,
-                UserStatus status, String preferredLanguage) {
+                UserStatus status, Language preferredLanguage) {
         this.providerId = providerId;
         this.email = email;
         this.username = username;
@@ -55,7 +56,7 @@ public class User extends BaseEntity {
         this.status = status;
     }
 
-    public void updatePreferredLanguage(String preferredLanguage) {
+    public void updatePreferredLanguage(Language preferredLanguage) {
         this.preferredLanguage = preferredLanguage;
     }
 }

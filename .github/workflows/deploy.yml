@@ -1,0 +1,112 @@
+name: Deploy Backend To EC2
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  APP_CONTAINER_NAME: paylens-backend
+  APP_PORT: "8080"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+      ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+      EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate required GitHub variables
+        run: |
+          missing=0
+          for key in AWS_REGION AWS_ROLE_ARN ECR_REPOSITORY EC2_INSTANCE_ID; do
+            if [ -z "${!key:-}" ]; then
+              echo "::error::Missing GitHub variable: $key"
+              missing=1
+            fi
+          done
+
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Run tests
+        run: |
+          chmod +x gradlew
+          ./gradlew test --no-daemon
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        id: build-image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE_URI="${REGISTRY}/${ECR_REPOSITORY}"
+
+          docker build -t "${IMAGE_URI}:${IMAGE_TAG}" -t "${IMAGE_URI}:latest" .
+          docker push "${IMAGE_URI}:${IMAGE_TAG}"
+          docker push "${IMAGE_URI}:latest"
+
+          echo "image_uri=${IMAGE_URI}" >> "${GITHUB_OUTPUT}"
+          echo "image_tag=${IMAGE_TAG}" >> "${GITHUB_OUTPUT}"
+
+      - name: Deploy on EC2 via SSM
+        env:
+          IMAGE_URI: ${{ steps.build-image.outputs.image_uri }}
+          IMAGE_TAG: ${{ steps.build-image.outputs.image_tag }}
+        run: |
+          SCRIPT_B64="$(base64 -w 0 deploy/ec2/deploy-from-ecr.sh)"
+
+          cat > commands.json <<EOF
+          {
+            "commands": [
+              "echo '${SCRIPT_B64}' | base64 -d | sudo tee /opt/paylens/bin/deploy-from-ecr.sh > /dev/null",
+              "sudo chmod 750 /opt/paylens/bin/deploy-from-ecr.sh",
+              "sudo AWS_REGION='${AWS_REGION}' CONTAINER_NAME='${APP_CONTAINER_NAME}' HOST_PORT='${APP_PORT}' CONTAINER_PORT='${APP_PORT}' /opt/paylens/bin/deploy-from-ecr.sh '${IMAGE_URI}' '${IMAGE_TAG}'"
+            ]
+          }
+          EOF
+
+          COMMAND_ID="$(aws ssm send-command \
+            --instance-ids "${EC2_INSTANCE_ID}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy PayLens ${GITHUB_SHA}" \
+            --parameters file://commands.json \
+            --query 'Command.CommandId' \
+            --output text)"
+
+          aws ssm wait command-executed \
+            --command-id "${COMMAND_ID}" \
+            --instance-id "${EC2_INSTANCE_ID}"
+
+          aws ssm get-command-invocation \
+            --command-id "${COMMAND_ID}" \
+            --instance-id "${EC2_INSTANCE_ID}"
