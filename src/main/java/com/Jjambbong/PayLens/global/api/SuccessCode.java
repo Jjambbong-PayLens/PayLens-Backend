@@ -9,6 +9,10 @@ import org.springframework.http.HttpStatus;
 public enum SuccessCode implements BaseCode { // 성공
     OK(HttpStatus.OK, "COMMON_200", "Success"),
     CREATED(HttpStatus.CREATED, "COMMON_201", "Created"),
+    DOCUMENT_UPLOAD_URLS_CREATED(HttpStatus.CREATED, "DOCUMENT_2012", "문서 업로드 URL 목록이 발급되었습니다."),
+    DOCUMENT_UPLOAD_COMPLETE_LIST_SUCCESS(HttpStatus.OK, "DOCUMENT_2003", "문서 업로드 목록이 완료되었습니다."),
+    DOCUMENT_LIST_GET_SUCCESS(HttpStatus.OK, "DOCUMENT_2004", "문서 목록 조회가 완료되었습니다."),
+    DOCUMENT_DELETE_SUCCESS(HttpStatus.OK, "DOCUMENT_2005", "문서 삭제가 완료되었습니다."),
 
     USER_LOGIN_SUCCESS(HttpStatus.CREATED, "USER_2011", "회원가입& 로그인이 완료되었습니다."),
     USER_LOGOUT_SUCCESS(HttpStatus.OK, "USER_2001", "로그아웃 되었습니다."),

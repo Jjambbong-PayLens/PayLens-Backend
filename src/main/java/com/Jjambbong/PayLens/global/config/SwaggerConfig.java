@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,6 +15,9 @@ import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
+
+    @Value("${springdoc.server-url}")
+    private String awsServerUrl;
 
     @Bean
     public OpenAPI openAPI() {
@@ -32,12 +36,12 @@ public class SwaggerConfig {
                         .bearerFormat("JWT"));
 
         Server localServer = new Server()
-                .url("http://localhost:8080")
+                .url("http://localhost:8080") // 로컬 개발 서버
                 .description("PayLens Local Server");
 
         Server httpServer = new Server()
-                .url("http://api.paylens.kro.kr") // 배포 서버
-                .description("PayLens HTTP Server");
+                .url(awsServerUrl) // AWS 배포 서버
+                .description("PayLens AWS Server");
 
         return new OpenAPI()
                 .info(apiInfo)
