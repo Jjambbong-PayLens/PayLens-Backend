@@ -36,7 +36,7 @@ public class SwaggerConfig {
                 .description("PayLens Local Server");
 
         Server httpServer = new Server()
-                .url("") // 배포 서버
+                .url("http://api.paylens.kro.kr") // 배포 서버
                 .description("PayLens HTTP Server");
 
         return new OpenAPI()
