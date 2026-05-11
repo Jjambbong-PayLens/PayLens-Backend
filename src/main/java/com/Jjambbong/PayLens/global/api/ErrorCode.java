@@ -21,10 +21,15 @@ public enum ErrorCode implements BaseCode { // 실패
     TOKEN_INVALID(HttpStatus.FORBIDDEN, "JWT_4032", "유효하지 않은 token입니다."),
     TOKEN_NO_AUTH(HttpStatus.FORBIDDEN, "JWT_4033", "권한 정보가 없는 token입니다."),
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "JWT_4011", "token 유효기간이 만료되었습니다."),
+    EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "AUTH_4091", "해당 이메일로 이미 가입된 계정이 존재합니다. 다른 로그인 방식을 시도해 주세요."), // 추가
 
     // Kakao Login
     KAKAO_AUTH_FAILED(HttpStatus.UNAUTHORIZED, "KAKAO_4011", "카카오 인증에 실패했습니다."),
     KAKAO_API_FAILED(HttpStatus.BAD_GATEWAY, "KAKAO_5021", "카카오 서버 응답에 실패했습니다."),
+
+    // Google Login
+    GOOGLE_AUTH_FAILED(HttpStatus.UNAUTHORIZED, "GOOGLE_4011", "구글 인증에 실패했습니다."),
+    GOOGLE_API_FAILED(HttpStatus.BAD_GATEWAY, "GOOGLE_5021", "구글 서버 응답에 실패했습니다."),
 
     // Document
     DOCUMENT_UPLOAD_FILE_COUNT_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4003", "문서 업로드 파일 개수는 1개 이상 10개 이하이어야 합니다."),
