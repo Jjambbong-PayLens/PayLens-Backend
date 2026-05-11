@@ -1,6 +1,7 @@
 package com.Jjambbong.PayLens.document.service;
 
 import com.Jjambbong.PayLens.document.domain.Document;
+import com.Jjambbong.PayLens.document.dto.request.DocumentAnalyzeRequest;
 import com.Jjambbong.PayLens.document.repository.DocumentRepository;
 import com.Jjambbong.PayLens.global.api.ErrorCode;
 import com.Jjambbong.PayLens.global.exception.GeneralException;
@@ -18,8 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Base64;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -33,20 +34,28 @@ public class GeminiService {
     private final DocumentRepository documentRepository;
     private final AnalyzeService analyzeService;
 
+    @Deprecated
     public String analyzeDocument(Long userId, Long documentId) {
+        return analyzeDocuments(userId, new DocumentAnalyzeRequest(List.of(documentId)));
+    }
+
+    public String analyzeDocuments(Long userId, DocumentAnalyzeRequest request) {
+
+        List<Long> documentIds = validateAnalyzeDocumentIds(request);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
 
-        Document document = documentRepository.findById(documentId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.DOCUMENT_NOT_FOUND));
+        List<Document> documents = documentIds.stream()
+                .map(documentId -> documentRepository.findById(documentId)
+                        .orElseThrow(() -> new GeneralException(ErrorCode.DOCUMENT_NOT_FOUND)))
+                .toList();
 
-        if (!document.getUser().getId().equals(user.getId())) {
-            throw new GeneralException(ErrorCode.DOCUMENT_ACCESS_DENIED);
-        }
-
-        String base64Pdf = analyzeService.getDocumentAsBase64(document);
-        byte[] pdfBytes = Base64.getDecoder().decode(base64Pdf);
+        documents.forEach(document -> {
+            if (!document.getUser().getId().equals(user.getId())) {
+                throw new GeneralException(ErrorCode.DOCUMENT_ACCESS_DENIED);
+            }
+        });
 
         String targetLanguage = user.getPreferredLanguage() != null
                 ? user.getPreferredLanguage().getDescription()
@@ -167,15 +176,21 @@ public class GeminiService {
 
             Part textPart = Part.builder().text(prompt).build();
 
-            Part pdfPart = Part.builder()
-                    .inlineData(Blob.builder()
-                            .mimeType("application/pdf")
-                            .data(base64Pdf)
+            List<Part> parts = new ArrayList<>();
+            parts.add(textPart);
+
+            documents.stream()
+                    .map(analyzeService::getDocumentAsBase64)
+                    .map(base64Pdf -> Part.builder()
+                            .inlineData(Blob.builder()
+                                    .mimeType("application/pdf")
+                                    .data(base64Pdf)
+                                    .build())
                             .build())
-                    .build();
+                    .forEach(parts::add);
 
             Content content = Content.builder()
-                    .parts(Arrays.asList(textPart, pdfPart))
+                    .parts(parts)
                     .build();
 
             GenerateContentResponse response = client.models.generateContent(
@@ -190,5 +205,14 @@ public class GeminiService {
             log.error("Gemini SDK 호출 중 에러 발생: {}", e.getMessage());
             throw new GeneralException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private List<Long> validateAnalyzeDocumentIds(DocumentAnalyzeRequest request) {
+        if (request == null || request.getDocumentIds() == null
+                || request.getDocumentIds().isEmpty() || request.getDocumentIds().size() > 10) {
+            throw new GeneralException(ErrorCode.DOCUMENT_ANALYZE_COUNT_INVALID);
+        }
+
+        return request.getDocumentIds();
     }
 }
