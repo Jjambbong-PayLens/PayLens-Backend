@@ -12,4 +12,5 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     List<Subscription> findByActiveTrueAndNextPaymentDateBefore(LocalDateTime dateTime);
 
     Optional<Subscription> findByUser(User user);
+    Optional<Subscription> findByCustomerUid(String customerUid);
 }

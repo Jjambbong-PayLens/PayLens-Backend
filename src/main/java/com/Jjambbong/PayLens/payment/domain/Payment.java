@@ -56,6 +56,6 @@ public class Payment {
     public void completePayment(String impUid, String customerUid) {
         this.impUid = impUid;
         this.status = PaymentStatus.PAID;
-        this.customerUid = customerUid; // 👈 포트원이 준 빌링키를 내 DB에 저장!
+        this.customerUid = customerUid; //포트원이 준 빌링키를 DB에 저장
     }
 }
