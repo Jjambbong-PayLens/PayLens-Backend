@@ -9,6 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 		"LOCAL_DB_PASSWORD=",
 		"KAKAO_REST_API_KEY=test-kakao-client",
 		"KAKAO_CLIENT_SECRET=test-kakao-secret",
+		"GOOGLE_CLIENT_ID=test-google-client",
+		"GOOGLE_CLIENT_SECRET=test-google-secret",
 		"JWT_SECRET=test-jwt-secret-key-for-ci-only-32-bytes-minimum",
 		"AWS_ACCESS_KEY=test-access-key",
 		"AWS_SECRET_KEY=test-secret-key",
