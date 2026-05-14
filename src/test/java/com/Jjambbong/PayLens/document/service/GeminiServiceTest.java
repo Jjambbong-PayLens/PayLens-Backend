@@ -11,6 +11,8 @@ import com.Jjambbong.PayLens.document.dto.request.DocumentAnalyzeRequest;
 import com.Jjambbong.PayLens.document.repository.DocumentRepository;
 import com.Jjambbong.PayLens.global.api.ErrorCode;
 import com.Jjambbong.PayLens.global.exception.GeneralException;
+import com.Jjambbong.PayLens.survey.repository.SurveyRepository;
+import com.Jjambbong.PayLens.survey.service.SurveyService;
 import com.Jjambbong.PayLens.user.domain.User;
 import com.Jjambbong.PayLens.user.domain.UserRole;
 import com.Jjambbong.PayLens.user.domain.UserStatus;
@@ -37,11 +39,14 @@ class GeminiServiceTest {
     @Mock
     private AnalyzeService analyzeService;
 
+    @Mock
+    private SurveyRepository surveyRepository;
+
     private GeminiService geminiService;
 
     @BeforeEach
     void setUp() {
-        geminiService = new GeminiService(userRepository, documentRepository, analyzeService);
+        geminiService = new GeminiService(userRepository, documentRepository, surveyRepository, analyzeService);
     }
 
     @Test
