@@ -5,6 +5,8 @@ import com.Jjambbong.PayLens.document.dto.request.DocumentAnalyzeRequest;
 import com.Jjambbong.PayLens.document.repository.DocumentRepository;
 import com.Jjambbong.PayLens.global.api.ErrorCode;
 import com.Jjambbong.PayLens.global.exception.GeneralException;
+import com.Jjambbong.PayLens.survey.domain.Survey;
+import com.Jjambbong.PayLens.survey.repository.SurveyRepository;
 import com.Jjambbong.PayLens.user.domain.User;
 import com.Jjambbong.PayLens.user.repository.UserRepository;
 
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -32,6 +35,7 @@ public class GeminiService {
 
     private final UserRepository userRepository;
     private final DocumentRepository documentRepository;
+    private final SurveyRepository surveyRepository;
     private final AnalyzeService analyzeService;
 
     @Deprecated
@@ -61,6 +65,8 @@ public class GeminiService {
                 ? user.getPreferredLanguage().getDescription()
                 : "한국어";
 
+        String surveyPrompt = buildSurveyPrompt(user);
+
         String prompt = String.format(
                 """
                 첨부 문서를 분석하여 임금체불 가능성을 JSON 형식으로 추출해줘.
@@ -68,6 +74,11 @@ public class GeminiService {
                 JSON 외의 설명은 하지 마.
 
                 먼저 첨부 문서가 임금체불 분석에 적합한 문서인지 검증해줘.
+
+                이 사용자의 근무 환경은 다음과 같아:
+                %s
+
+                위 근무 환경 정보를 바탕으로 연장/야간/휴일근로수당(1.5배), 주휴수당, 퇴직금, 휴업수당 발생 여부를 반드시 반영해서 분석해줘.
 
                 유효한 문서 유형:
                 - 급여명세서
@@ -166,7 +177,8 @@ public class GeminiService {
                   }
                 }
                 """,
-                targetLanguage
+                targetLanguage,
+                surveyPrompt
         );
 
         try {
@@ -214,5 +226,23 @@ public class GeminiService {
         }
 
         return request.getDocumentIds();
+    }
+
+    private String buildSurveyPrompt(User user) {
+        Optional<Survey> surveyOpt = surveyRepository.findByUser(user);
+        
+        if (surveyOpt.isEmpty()) {
+            return "- 사용자가 아직 문진표를 작성하지 않았습니다. 일반적인 근로기준법을 바탕으로 분석해주세요.";
+        }
+
+        Survey survey = surveyOpt.get();
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append(survey.isOverFiveEmployees() ? "- 상시 근로자 5인 이상 사업장입니다. (연장/야간/휴일수당 1.5배 가산 적용 대상)\n" : "- 상시 근로자 5인 미만 사업장입니다. (가산수당 미적용)\n");
+        sb.append(survey.isWorkingOverFifteenHours() ? "- 1주 소정근로시간이 15시간 이상입니다. (주휴수당 발생 대상)\n" : "- 1주 소정근로시간이 15시간 미만(초단시간 근로자)입니다. (주휴수당 미발생)\n");
+        sb.append(survey.isWorkingOverOneYear() ? "- 계속근로기간이 1년 이상입니다. (퇴직금 발생 대상)\n" : "- 계속근로기간이 1년 미만입니다. (퇴직금 미발생)\n");
+        sb.append(survey.isHasUnscheduledDayOff() ? "- 사용자의 귀책사유 없이 휴업한 날(갑자기 쉬라고 한 날)이 존재합니다. (휴업수당 70% 발생 가능성 검토 요망)\n" : "- 휴업한 날이 없습니다.\n");
+
+        return sb.toString();
     }
 }
