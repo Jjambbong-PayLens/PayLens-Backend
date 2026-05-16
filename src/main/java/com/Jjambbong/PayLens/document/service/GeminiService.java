@@ -1,9 +1,13 @@
 package com.Jjambbong.PayLens.document.service;
 
 import com.Jjambbong.PayLens.document.domain.Document;
+import com.Jjambbong.PayLens.document.dto.request.DocumentAnalyzeRequest;
+import com.Jjambbong.PayLens.document.dto.response.OcrResult;
 import com.Jjambbong.PayLens.document.repository.DocumentRepository;
 import com.Jjambbong.PayLens.global.api.ErrorCode;
 import com.Jjambbong.PayLens.global.exception.GeneralException;
+import com.Jjambbong.PayLens.survey.domain.Survey;
+import com.Jjambbong.PayLens.survey.repository.SurveyRepository;
 import com.Jjambbong.PayLens.user.domain.User;
 import com.Jjambbong.PayLens.user.repository.UserRepository;
 
@@ -18,8 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Base64;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -31,34 +36,76 @@ public class GeminiService {
 
     private final UserRepository userRepository;
     private final DocumentRepository documentRepository;
+    private final SurveyRepository surveyRepository;
     private final AnalyzeService analyzeService;
 
+    // OCR 서버를 호출하는 서비스
+    private final OcrService ocrService;
+
+    @Deprecated
     public String analyzeDocument(Long userId, Long documentId) {
+        return analyzeDocuments(userId, new DocumentAnalyzeRequest(List.of(documentId)));
+    }
+
+    public String analyzeDocuments(Long userId, DocumentAnalyzeRequest request) {
+
+        List<Long> documentIds = validateAnalyzeDocumentIds(request);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
 
-        Document document = documentRepository.findById(documentId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.DOCUMENT_NOT_FOUND));
+        List<Document> documents = documentIds.stream()
+                .map(documentId -> documentRepository.findById(documentId)
+                        .orElseThrow(() -> new GeneralException(ErrorCode.DOCUMENT_NOT_FOUND)))
+                .toList();
 
-        if (!document.getUser().getId().equals(user.getId())) {
-            throw new GeneralException(ErrorCode.DOCUMENT_ACCESS_DENIED);
-        }
-
-        String base64Pdf = analyzeService.getDocumentAsBase64(document);
-        byte[] pdfBytes = Base64.getDecoder().decode(base64Pdf);
+        documents.forEach(document -> {
+            if (!document.getUser().getId().equals(user.getId())) {
+                throw new GeneralException(ErrorCode.DOCUMENT_ACCESS_DENIED);
+            }
+        });
 
         String targetLanguage = user.getPreferredLanguage() != null
                 ? user.getPreferredLanguage().getDescription()
                 : "한국어";
 
+        String surveyPrompt = buildSurveyPrompt(user);
+
+        /*
+         * 1. OCR 먼저 실행
+         * - 사용자가 업로드한 문서들을 PaddleOCR 서버로 보내 텍스트를 추출한다.
+         * - OCR이 실패하더라도 전체 분석이 중단되지 않도록 null 결과를 허용한다.
+         */
+        List<OcrResult> ocrResults = documents.stream()
+                .map(this::extractTextSafely)
+                .toList();
+
+        /*
+         * 2. OCR 결과를 Gemini 프롬프트에 넣기 위한 문자열로 변환
+         */
+        String ocrPrompt = buildOcrPrompt(documents, ocrResults);
+
         String prompt = String.format(
                 """
-                첨부 문서를 분석하여 임금체불 가능성을 JSON 형식으로 추출해줘.
+                다음은 사용자가 업로드한 문서들의 OCR 추출 결과야.
+                OCR 결과를 바탕으로 임금체불 가능성을 JSON 형식으로 추출해줘.
                 모든 키와 값의 언어는 "%s"로 작성해줘.
                 JSON 외의 설명은 하지 마.
 
-                먼저 첨부 문서가 임금체불 분석에 적합한 문서인지 검증해줘.
+                OCR 결과에는 오탈자, 숫자 인식 오류, 줄 순서 오류가 있을 수 있어.
+                금액, 날짜, 근무시간은 문맥상 명확한 경우에만 추출하고,
+                불확실한 값은 null 또는 "판단불가"로 작성해.
+                추출한 값은 가능한 경우 OCR 원문 근거 문장을 함께 작성해.
+
+                다음은 문서별 OCR 결과야:
+                %s
+
+                먼저 OCR 결과가 임금체불 분석에 적합한 문서인지 검증해줘.
+
+                이 사용자의 근무 환경은 다음과 같아:
+                %s
+
+                위 근무 환경 정보를 바탕으로 연장/야간/휴일근로수당(1.5배), 주휴수당, 퇴직금, 휴업수당 발생 여부를 반드시 반영해서 분석해줘.
 
                 유효한 문서 유형:
                 - 급여명세서
@@ -73,6 +120,8 @@ public class GeminiService {
 
                 불량문서 판단 기준:
                 - 임금, 급여, 근로시간, 입금액, 수당, 퇴직금, 근로계약, 출퇴근 기록과 관련 없는 문서이면 불량문서여부를 true로 작성해.
+                - OCR 결과가 거의 없거나 읽을 수 없는 수준이면 불량문서여부를 true로 작성해.
+                - OCR 신뢰도가 낮아 핵심 정보를 확인하기 어려우면 문서적합도를 "부분적합" 또는 "부적합"으로 작성해.
                 - 강의자료, 과제자료, 일반 문서, 이미지가 깨진 파일, 읽을 수 없는 PDF, 내용이 거의 없는 문서는 불량문서여부를 true로 작성해.
                 - 불량문서여부가 true이면 임금체불분석가능여부는 false로 작성해.
                 - 문서적합도는 "적합", "부분적합", "부적합" 중 하나로 작성해.
@@ -121,21 +170,83 @@ public class GeminiService {
                     "분석요약": null
                   },
                   "공통추출항목": {
-                    "시급": null,
+                    "시급": {
+                      "값": null,
+                      "근거문장": null,
+                      "신뢰도": null
+                    },
                     "최저시급": 10320,
-                    "주당근로시간": null,
-                    "일일근로시간": null,
-                    "재직시작일": null,
-                    "재직종료일": null,
-                    "퇴사일": null,
-                    "급여지급일": null,
-                    "기본급": null,
-                    "총지급액": null,
-                    "총공제액": null,
-                    "실수령액": null,
-                    "입금액": null,
-                    "사업장근로자수_5인이상여부": null
+                    "주당근로시간": {
+                      "값": null,
+                      "근거문장": null,
+                      "신뢰도": null
+                    },
+                    "일일근로시간": {
+                      "값": null,
+                      "근거문장": null,
+                      "신뢰도": null
+                    },
+                    "재직시작일": {
+                      "값": null,
+                      "근거문장": null,
+                      "신뢰도": null
+                    },
+                    "재직종료일": {
+                      "값": null,
+                      "근거문장": null,
+                      "신뢰도": null
+                    },
+                    "퇴사일": {
+                      "값": null,
+                      "근거문장": null,
+                      "신뢰도": null
+                    },
+                    "급여지급일": {
+                      "값": null,
+                      "근거문장": null,
+                      "신뢰도": null
+                    },
+                    "기본급": {
+                      "값": null,
+                      "근거문장": null,
+                      "신뢰도": null
+                    },
+                    "총지급액": {
+                      "값": null,
+                      "근거문장": null,
+                      "신뢰도": null
+                    },
+                    "총공제액": {
+                      "값": null,
+                      "근거문장": null,
+                      "신뢰도": null
+                    },
+                    "실수령액": {
+                      "값": null,
+                      "근거문장": null,
+                      "신뢰도": null
+                    },
+                    "입금액": {
+                      "값": null,
+                      "근거문장": null,
+                      "신뢰도": null
+                    },
+                    "사업장근로자수_5인이상여부": {
+                      "값": null,
+                      "근거문장": null,
+                      "신뢰도": null
+                    }
                   },
+                  "추출증거": [
+                    {
+                      "항목": null,
+                      "값": null,
+                      "단위": null,
+                      "근거문장": null,
+                      "출처문서": null,
+                      "신뢰도": null
+                    }
+                  ],
                   "임금체불분석": {
                     "최저임금및주휴수당": {
                       "위반가능성": null,
@@ -168,7 +279,9 @@ public class GeminiService {
                   }
                 }
                 """,
-                targetLanguage
+                targetLanguage,
+                ocrPrompt,
+                surveyPrompt
         );
 
         try {
@@ -178,15 +291,34 @@ public class GeminiService {
 
             Part textPart = Part.builder().text(prompt).build();
 
-            Part pdfPart = Part.builder()
-                    .inlineData(Blob.builder()
-                            .mimeType("application/pdf")
-                            .data(base64Pdf)
-                            .build())
-                    .build();
+            List<Part> parts = new ArrayList<>();
+            parts.add(textPart);
+
+            /*
+             * 3. OCR 결과가 부족한 문서만 원본 파일을 Gemini에 fallback으로 첨부
+             * - OCR이 충분히 잘 된 문서는 OCR 텍스트만 사용
+             * - OCR이 실패했거나 텍스트가 너무 짧거나 신뢰도가 낮으면 기존 방식처럼 원본 PDF도 함께 전달
+             */
+            for (int i = 0; i < documents.size(); i++) {
+                Document document = documents.get(i);
+                OcrResult ocrResult = ocrResults.get(i);
+
+                if (shouldAttachOriginalFile(ocrResult)) {
+                    String base64Pdf = analyzeService.getDocumentAsBase64(document);
+
+                    Part filePart = Part.builder()
+                            .inlineData(Blob.builder()
+                                    .mimeType("application/pdf")
+                                    .data(base64Pdf)
+                                    .build())
+                            .build();
+
+                    parts.add(filePart);
+                }
+            }
 
             Content content = Content.builder()
-                    .parts(Arrays.asList(textPart, pdfPart))
+                    .parts(parts)
                     .build();
 
             GenerateContentResponse response = client.models.generateContent(
@@ -201,5 +333,90 @@ public class GeminiService {
             log.error("Gemini SDK 호출 중 에러 발생: {}", e.getMessage());
             throw new GeneralException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private OcrResult extractTextSafely(Document document) {
+        try {
+            return ocrService.extractText(document);
+        } catch (Exception e) {
+            log.warn("OCR 처리 실패 - documentId: {}, error: {}", document.getId(), e.getMessage());
+            return null;
+        }
+    }
+
+    private String buildOcrPrompt(List<Document> documents, List<OcrResult> ocrResults) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < documents.size(); i++) {
+            Document document = documents.get(i);
+            OcrResult ocrResult = ocrResults.get(i);
+
+            sb.append("=== 문서 ").append(i + 1).append(" ===\n");
+            sb.append("문서ID: ").append(document.getId()).append("\n");
+
+            if (ocrResult == null) {
+                sb.append("OCR 결과: 실패\n");
+                sb.append("OCR 텍스트: 없음\n\n");
+                continue;
+            }
+
+            sb.append("OCR 평균 신뢰도: ").append(ocrResult.confidence()).append("\n");
+            sb.append("OCR 텍스트:\n");
+
+            if (ocrResult.text() == null || ocrResult.text().isBlank()) {
+                sb.append("텍스트 없음\n\n");
+            } else {
+                sb.append(ocrResult.text()).append("\n\n");
+            }
+        }
+
+        return sb.toString();
+    }
+
+    private boolean shouldAttachOriginalFile(OcrResult ocrResult) {
+        return ocrResult == null
+                || ocrResult.text() == null
+                || ocrResult.text().isBlank()
+                || ocrResult.text().length() < 30
+                || ocrResult.confidence() == null
+                || ocrResult.confidence() < 0.6;
+    }
+
+    private List<Long> validateAnalyzeDocumentIds(DocumentAnalyzeRequest request) {
+        if (request == null || request.getDocumentIds() == null
+                || request.getDocumentIds().isEmpty() || request.getDocumentIds().size() > 10) {
+            throw new GeneralException(ErrorCode.DOCUMENT_ANALYZE_COUNT_INVALID);
+        }
+
+        return request.getDocumentIds();
+    }
+
+    private String buildSurveyPrompt(User user) {
+        Optional<Survey> surveyOpt = surveyRepository.findByUser(user);
+
+        if (surveyOpt.isEmpty()) {
+            return "- 사용자가 아직 문진표를 작성하지 않았습니다. 일반적인 근로기준법을 바탕으로 분석해주세요.";
+        }
+
+        Survey survey = surveyOpt.get();
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(survey.isOverFiveEmployees()
+                ? "- 상시 근로자 5인 이상 사업장입니다. (연장/야간/휴일수당 1.5배 가산 적용 대상)\n"
+                : "- 상시 근로자 5인 미만 사업장입니다. (가산수당 미적용)\n");
+
+        sb.append(survey.isWorkingOverFifteenHours()
+                ? "- 1주 소정근로시간이 15시간 이상입니다. (주휴수당 발생 대상)\n"
+                : "- 1주 소정근로시간이 15시간 미만(초단시간 근로자)입니다. (주휴수당 미발생)\n");
+
+        sb.append(survey.isWorkingOverOneYear()
+                ? "- 계속근로기간이 1년 이상입니다. (퇴직금 발생 대상)\n"
+                : "- 계속근로기간이 1년 미만입니다. (퇴직금 미발생)\n");
+
+        sb.append(survey.isHasUnscheduledDayOff()
+                ? "- 사용자의 귀책사유 없이 휴업한 날(갑자기 쉬라고 한 날)이 존재합니다. (휴업수당 70% 발생 가능성 검토 요망)\n"
+                : "- 휴업한 날이 없습니다.\n");
+
+        return sb.toString();
     }
 }
