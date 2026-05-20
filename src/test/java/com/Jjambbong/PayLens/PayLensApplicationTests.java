@@ -16,7 +16,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 		"AWS_SECRET_KEY=test-secret-key",
 		"AWS_S3_BUCKET=test-bucket",
 		"AWS_S3_PATH=documents",
-		"GEMINI_API_KEY=test-gemini-api-key"
+		"GEMINI_API_KEY=test-gemini-api-key",
+		"PORTONE_STORE_ID=test-store-id",
+		"PORTONE_API_KEY=test-portone-api-key",
+		"PORTONE_API_SECRET=test-portone-api-secret"
 })
 class PayLensApplicationTests {
 
