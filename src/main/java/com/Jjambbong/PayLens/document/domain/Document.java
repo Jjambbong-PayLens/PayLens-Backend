@@ -33,6 +33,10 @@ public class Document extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "analysis_id")
+    private Analysis analysis;
+
     @Column(nullable = false, length = 255)
     private String originalFileName;
 
@@ -67,5 +71,9 @@ public class Document extends BaseEntity {
 
     public void completeUpload() {
         this.status = DocumentStatus.UPLOADED;
+    }
+
+    public void setAnalysis(Analysis analysis) {
+        this.analysis = analysis;
     }
 }

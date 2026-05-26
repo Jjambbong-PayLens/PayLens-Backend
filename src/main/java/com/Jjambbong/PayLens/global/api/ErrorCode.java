@@ -44,6 +44,7 @@ public enum ErrorCode implements BaseCode { // 실패
     DOCUMENT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "DOCUMENT_4031", "해당 문서에 접근할 권한이 없습니다."),
     DOCUMENT_OBJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "DOCUMENT_4042", "S3에서 업로드된 파일을 찾을 수 없습니다."),
     PRESIGNED_URL_GENERATION_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "DOCUMENT_5031", "문서 업로드 URL 발급에 실패했습니다."),
+    ANALYSIS_NOT_FOUND(HttpStatus.NOT_FOUND, "DOCUMENT_4043", "아직 해당 문서에 대한 분석 결과가 없습니다."),
 
     // YouTube
     YOUTUBE_API_FAILED(HttpStatus.BAD_GATEWAY, "YOUTUBE_API_FAILED", "YouTube API 호출에 실패했습니다."),
