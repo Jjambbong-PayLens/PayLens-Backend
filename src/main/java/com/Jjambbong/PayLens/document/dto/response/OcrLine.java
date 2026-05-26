@@ -1,10 +1,7 @@
 package com.Jjambbong.PayLens.document.dto.response;
 
-import java.util.List;
-
-public record OcrResult(
+public record OcrLine(
         String text,
-        Double confidence,
-        List<OcrLine> lines
+        Double confidence
 ) {
 }

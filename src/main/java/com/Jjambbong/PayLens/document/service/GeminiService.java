@@ -4,6 +4,7 @@ import com.Jjambbong.PayLens.document.domain.Document;
 import com.Jjambbong.PayLens.document.dto.request.DocumentAnalyzeRequest;
 import com.Jjambbong.PayLens.document.dto.response.OcrResult;
 import com.Jjambbong.PayLens.document.repository.DocumentRepository;
+import com.Jjambbong.PayLens.document.service.ocr.OcrEngineType;
 import com.Jjambbong.PayLens.global.api.ErrorCode;
 import com.Jjambbong.PayLens.global.exception.GeneralException;
 import com.Jjambbong.PayLens.survey.domain.Survey;
@@ -38,8 +39,6 @@ public class GeminiService {
     private final DocumentRepository documentRepository;
     private final SurveyRepository surveyRepository;
     private final AnalyzeService analyzeService;
-
-    // OCR 서버를 호출하는 서비스
     private final OcrService ocrService;
 
     @Deprecated
@@ -71,18 +70,10 @@ public class GeminiService {
 
         String surveyPrompt = buildSurveyPrompt(user);
 
-        /*
-         * 1. OCR 먼저 실행
-         * - 사용자가 업로드한 문서들을 PaddleOCR 서버로 보내 텍스트를 추출한다.
-         * - OCR이 실패하더라도 전체 분석이 중단되지 않도록 null 결과를 허용한다.
-         */
         List<OcrResult> ocrResults = documents.stream()
-                .map(this::extractTextSafely)
+                .map(document -> extractTextSafely(document, OcrEngineType.PADDLE))
                 .toList();
 
-        /*
-         * 2. OCR 결과를 Gemini 프롬프트에 넣기 위한 문자열로 변환
-         */
         String ocrPrompt = buildOcrPrompt(documents, ocrResults);
 
         String prompt = String.format(
@@ -294,11 +285,6 @@ public class GeminiService {
             List<Part> parts = new ArrayList<>();
             parts.add(textPart);
 
-            /*
-             * 3. OCR 결과가 부족한 문서만 원본 파일을 Gemini에 fallback으로 첨부
-             * - OCR이 충분히 잘 된 문서는 OCR 텍스트만 사용
-             * - OCR이 실패했거나 텍스트가 너무 짧거나 신뢰도가 낮으면 기존 방식처럼 원본 PDF도 함께 전달
-             */
             for (int i = 0; i < documents.size(); i++) {
                 Document document = documents.get(i);
                 OcrResult ocrResult = ocrResults.get(i);
@@ -335,11 +321,12 @@ public class GeminiService {
         }
     }
 
-    private OcrResult extractTextSafely(Document document) {
+    private OcrResult extractTextSafely(Document document, OcrEngineType engineType) {
         try {
-            return ocrService.extractText(document);
+            return ocrService.extractText(document, engineType);
         } catch (Exception e) {
-            log.warn("OCR 처리 실패 - documentId: {}, error: {}", document.getId(), e.getMessage());
+            log.warn("OCR 처리 실패 - documentId: {}, engine: {}, error: {}",
+                    document.getId(), engineType, e.getMessage());
             return null;
         }
     }
@@ -355,12 +342,15 @@ public class GeminiService {
             sb.append("문서ID: ").append(document.getId()).append("\n");
 
             if (ocrResult == null) {
+                sb.append("OCR 엔진: 실패\n");
                 sb.append("OCR 결과: 실패\n");
                 sb.append("OCR 텍스트: 없음\n\n");
                 continue;
             }
 
+            sb.append("OCR 엔진: ").append(ocrResult.engineType()).append("\n");
             sb.append("OCR 평균 신뢰도: ").append(ocrResult.confidence()).append("\n");
+            sb.append("OCR 처리 시간(ms): ").append(ocrResult.elapsedMs()).append("\n");
             sb.append("OCR 텍스트:\n");
 
             if (ocrResult.text() == null || ocrResult.text().isBlank()) {
