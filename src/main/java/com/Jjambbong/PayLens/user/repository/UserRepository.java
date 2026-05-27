@@ -13,4 +13,5 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User,Long> {
     Optional<User> findByProviderId(String providerId);
     Optional<User> findById(Long id);
+    Optional<User> findByEmail(String email); // 이메일로 유저 찾기 추가
 }

@@ -9,6 +9,10 @@ import org.springframework.http.HttpStatus;
 public enum SuccessCode implements BaseCode { // 성공
     OK(HttpStatus.OK, "COMMON_200", "Success"),
     CREATED(HttpStatus.CREATED, "COMMON_201", "Created"),
+    DOCUMENT_UPLOAD_URLS_CREATED(HttpStatus.CREATED, "DOCUMENT_2012", "문서 업로드 URL 목록이 발급되었습니다."),
+    DOCUMENT_UPLOAD_COMPLETE_LIST_SUCCESS(HttpStatus.OK, "DOCUMENT_2003", "문서 업로드 목록이 완료되었습니다."),
+    DOCUMENT_LIST_GET_SUCCESS(HttpStatus.OK, "DOCUMENT_2004", "문서 목록 조회가 완료되었습니다."),
+    DOCUMENT_DELETE_SUCCESS(HttpStatus.OK, "DOCUMENT_2005", "문서 삭제가 완료되었습니다."),
 
     USER_LOGIN_SUCCESS(HttpStatus.CREATED, "USER_2011", "회원가입& 로그인이 완료되었습니다."),
     USER_LOGOUT_SUCCESS(HttpStatus.OK, "USER_2001", "로그아웃 되었습니다."),
@@ -16,11 +20,14 @@ public enum SuccessCode implements BaseCode { // 성공
     USER_DELETE_SUCCESS(HttpStatus.OK, "USER_2003", "회원탈퇴가 완료되었습니다."),
     USER_PROFILE_UPDATE_SUCCESS(HttpStatus.OK, "USER_2006", "프로필 저장이 완료되었습니다."),
     USER_INFO_GET_SUCCESS(HttpStatus.OK, "USER_2007", "유저 정보 조회가 완료되었습니다."),
+    USER_LANGUAGE_UPDATE_SUCCESS(HttpStatus.OK, "USER_2004", "사용자 언어 설정이 변경되었습니다."), // 추가된 코드
+    USER_SURVEY_UPDATE_SUCCESS(HttpStatus.OK, "USER_2005", "사용자 문진 내역이 저장되었습니다."), // 추가된 코드
 
-    FOLLOW_ADD_SUCCESS(HttpStatus.CREATED,"FOLLOW_2011","팔로우 추가가 완료되었습니다."),
-    FOLLOW_DELETE_SUCCESS(HttpStatus.OK, "FOLLOW_2001", "언팔로우가 완료되었습니다."),
-    FOLLOW_LIST_GET_SUCCESS(HttpStatus.OK, "FOLLOW_2002", "팔로우 목록 조회가 완료되었습니다."),
-    FOLLOW_SEARCH_SUCCESS(HttpStatus.OK, "FOLLOW_2003", "팔로우 가능한 유저 검색이 완료되었습니다."),
+    DOCUMENT_UPLOAD_URL_CREATED(HttpStatus.CREATED, "DOCUMENT_2011", "문서 업로드 URL이 발급되었습니다."),
+    DOCUMENT_UPLOAD_COMPLETE_SUCCESS(HttpStatus.OK, "DOCUMENT_2001", "문서 업로드가 완료되었습니다."),
+
+    // gemini
+    DOCUMENT_ANALYZE_SUCCESS(HttpStatus.OK, "DOCUMENT_2002", "문서 분석이 완료되었습니다"),
 
     // profile success
     PROFILE_PUT_SUCCESS(HttpStatus.OK, "PROFILE_2001", "프로필 수정(추가)이 완료되었습니다."),
