@@ -112,6 +112,8 @@ class DocumentServiceTest {
         when(amazonConfig.getBucket()).thenReturn("paylens-dev-documents");
         when(s3Client.deleteObject(any(DeleteObjectRequest.class))).thenReturn(DeleteObjectResponse.builder().build());
 
+        payslip.completeOcr("documents_ocr/1/PAYSLIP/2026/05/paystub_ocr.json", 100L, java.time.LocalDateTime.now());
+
         DocumentDeleteListResponse response = documentService.deleteDocuments(
                 1L,
                 new DocumentDeleteRequest(List.of(10L, 11L))
@@ -119,7 +121,7 @@ class DocumentServiceTest {
 
         assertThat(response.getCount()).isEqualTo(2);
         assertThat(response.getDocuments()).extracting("documentId").containsExactly(10L, 11L);
-        verify(s3Client, times(2)).deleteObject(any(DeleteObjectRequest.class));
+        verify(s3Client, times(3)).deleteObject(any(DeleteObjectRequest.class));
         verify(documentRepository).deleteAll(List.of(payslip, contract));
     }
 

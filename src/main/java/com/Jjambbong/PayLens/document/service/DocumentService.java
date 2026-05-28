@@ -155,7 +155,7 @@ public class DocumentService {
                 .map(DocumentDeleteResponse::from)
                 .toList();
 
-        documents.forEach(document -> deleteS3Object(document.getObjectKey()));
+        documents.forEach(this::deleteDocumentObjects);
         documentRepository.deleteAll(documents);
 
         return DocumentDeleteListResponse.builder()
@@ -270,6 +270,13 @@ public class DocumentService {
             throw new GeneralException(ErrorCode.S3_UPLOAD_FAILED);
         } catch (SdkClientException e) {
             throw new GeneralException(ErrorCode.S3_UPLOAD_FAILED);
+        }
+    }
+
+    private void deleteDocumentObjects(Document document) {
+        deleteS3Object(document.getObjectKey());
+        if (document.getOcrResultKey() != null && !document.getOcrResultKey().isBlank()) {
+            deleteS3Object(document.getOcrResultKey());
         }
     }
 

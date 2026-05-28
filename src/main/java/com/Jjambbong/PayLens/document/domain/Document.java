@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -53,6 +54,20 @@ public class Document extends BaseEntity {
     @Column(nullable = false, length = 30)
     private DocumentStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30)
+    private DocumentOcrStatus ocrStatus;
+
+    @Column(length = 700)
+    private String ocrResultKey;
+
+    private Long ocrJsonSizeBytes;
+
+    private LocalDateTime ocrProcessedAt;
+
+    @Column(length = 500)
+    private String ocrFailureReason;
+
     @Builder
     public Document(User user, String originalFileName, String storedFileName, String objectKey,
                     String contentType, DocumentType documentType, DocumentStatus status) {
@@ -63,9 +78,28 @@ public class Document extends BaseEntity {
         this.contentType = contentType;
         this.documentType = documentType;
         this.status = status;
+        this.ocrStatus = DocumentOcrStatus.NOT_STARTED;
     }
 
     public void completeUpload() {
         this.status = DocumentStatus.UPLOADED;
+    }
+
+    public void startOcr() {
+        this.ocrStatus = DocumentOcrStatus.PROCESSING;
+        this.ocrFailureReason = null;
+    }
+
+    public void completeOcr(String ocrResultKey, Long ocrJsonSizeBytes, LocalDateTime ocrProcessedAt) {
+        this.ocrStatus = DocumentOcrStatus.COMPLETED;
+        this.ocrResultKey = ocrResultKey;
+        this.ocrJsonSizeBytes = ocrJsonSizeBytes;
+        this.ocrProcessedAt = ocrProcessedAt;
+        this.ocrFailureReason = null;
+    }
+
+    public void failOcr(String failureReason) {
+        this.ocrStatus = DocumentOcrStatus.FAILED;
+        this.ocrFailureReason = failureReason;
     }
 }
