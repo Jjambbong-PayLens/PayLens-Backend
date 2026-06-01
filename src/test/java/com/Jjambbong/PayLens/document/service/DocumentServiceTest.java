@@ -20,6 +20,7 @@ import com.Jjambbong.PayLens.document.dto.response.DocumentCompleteResponse;
 import com.Jjambbong.PayLens.document.dto.response.DocumentDeleteListResponse;
 import com.Jjambbong.PayLens.document.dto.response.DocumentListResponse;
 import com.Jjambbong.PayLens.document.dto.response.DocumentUploadUrlsResponse;
+import com.Jjambbong.PayLens.document.repository.AnalysisRepository;
 import com.Jjambbong.PayLens.document.repository.DocumentRepository;
 import com.Jjambbong.PayLens.global.api.ErrorCode;
 import com.Jjambbong.PayLens.global.config.AmazonConfig;
@@ -58,6 +59,9 @@ class DocumentServiceTest {
     private UserRepository userRepository;
 
     @Mock
+    private AnalysisRepository analysisRepository;
+
+    @Mock
     private AmazonConfig amazonConfig;
 
     @Mock
@@ -73,6 +77,7 @@ class DocumentServiceTest {
         documentService = new DocumentService(
                 documentRepository,
                 userRepository,
+                analysisRepository,
                 new DocumentUploadPolicy(),
                 amazonConfig,
                 s3Client,
