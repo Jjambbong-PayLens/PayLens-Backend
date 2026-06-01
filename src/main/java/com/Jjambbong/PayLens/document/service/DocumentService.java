@@ -1,19 +1,14 @@
 package com.Jjambbong.PayLens.document.service;
 
+import com.Jjambbong.PayLens.document.domain.Analysis;
 import com.Jjambbong.PayLens.document.domain.Document;
 import com.Jjambbong.PayLens.document.domain.DocumentStatus;
 import com.Jjambbong.PayLens.document.dto.request.DocumentCompleteRequest;
 import com.Jjambbong.PayLens.document.dto.request.DocumentDeleteRequest;
 import com.Jjambbong.PayLens.document.dto.request.DocumentUploadUrlRequest;
 import com.Jjambbong.PayLens.document.dto.request.DocumentUploadUrlsRequest;
-import com.Jjambbong.PayLens.document.dto.response.DocumentCompleteListResponse;
-import com.Jjambbong.PayLens.document.dto.response.DocumentCompleteResponse;
-import com.Jjambbong.PayLens.document.dto.response.DocumentDeleteListResponse;
-import com.Jjambbong.PayLens.document.dto.response.DocumentDeleteResponse;
-import com.Jjambbong.PayLens.document.dto.response.DocumentListItemResponse;
-import com.Jjambbong.PayLens.document.dto.response.DocumentListResponse;
-import com.Jjambbong.PayLens.document.dto.response.DocumentUploadUrlResponse;
-import com.Jjambbong.PayLens.document.dto.response.DocumentUploadUrlsResponse;
+import com.Jjambbong.PayLens.document.dto.response.*;
+import com.Jjambbong.PayLens.document.repository.AnalysisRepository;
 import com.Jjambbong.PayLens.document.repository.DocumentRepository;
 import com.Jjambbong.PayLens.global.api.ErrorCode;
 import com.Jjambbong.PayLens.global.config.AmazonConfig;
@@ -25,6 +20,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,10 +49,12 @@ public class DocumentService {
 
     private final DocumentRepository documentRepository;
     private final UserRepository userRepository;
+    private final AnalysisRepository analysisRepository;
     private final DocumentUploadPolicy documentUploadPolicy;
     private final AmazonConfig amazonConfig;
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public DocumentUploadUrlResponse createUploadUrl(Long userId, DocumentUploadUrlRequest request) {
         User user = getUser(userId);
@@ -282,5 +282,71 @@ public class DocumentService {
         } catch (AwsServiceException | SdkClientException e) {
             throw new GeneralException(ErrorCode.S3_DELETE_FAILED);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public AnalysisResponse getAnalysisResult(Long userId, Long documentId) {
+        User user = getUser(userId);
+        Document document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.DOCUMENT_NOT_FOUND));
+
+        if (!document.getUser().getId().equals(user.getId())) {
+            throw new GeneralException(ErrorCode.DOCUMENT_ACCESS_DENIED);
+        }
+
+        Analysis analysis = document.getAnalysis();
+
+        if (analysis == null) {
+            throw new GeneralException(ErrorCode.ANALYSIS_NOT_FOUND);
+        }
+
+        return new AnalysisResponse(analysis, objectMapper);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AnalysisListItemResponse> getMyAnalyses(Long userId) {
+        User user = getUser(userId);
+        List<Analysis> analyses = analysisRepository.findByUserOrderByCreatedAtDesc(user);
+        return analyses.stream()
+                .map(AnalysisListItemResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public AnalysisResponse getAnalysisResultByAnalysisId(Long userId, Long analysisId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
+
+        Analysis analysis = analysisRepository.findById(analysisId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.ANALYSIS_NOT_FOUND));
+
+        // 분석 결과의 소유자가 요청한 사용자가 맞는지 확인
+        if (!analysis.getUser().getId().equals(user.getId())) {
+            throw new GeneralException(ErrorCode.DOCUMENT_ACCESS_DENIED);
+        }
+
+        return new AnalysisResponse(analysis, objectMapper);
+    }
+
+    @Transactional
+    public void deleteAnalysis(Long userId, Long analysisId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
+
+        Analysis analysis = analysisRepository.findById(analysisId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.ANALYSIS_NOT_FOUND));
+
+        // 분석 결과의 소유자가 요청한 사용자가 맞는지 확인
+        if (!analysis.getUser().getId().equals(user.getId())) {
+            throw new GeneralException(ErrorCode.DOCUMENT_ACCESS_DENIED);
+        }
+
+        // [핵심] 연관된 문서들의 analysis_id를 null로 업데이트 (연관관계 끊기)
+        for (Document document : analysis.getDocuments()) {
+            document.setAnalysis(null);
+        }
+
+        // 분석 결과 삭제
+        analysisRepository.delete(analysis);
     }
 }

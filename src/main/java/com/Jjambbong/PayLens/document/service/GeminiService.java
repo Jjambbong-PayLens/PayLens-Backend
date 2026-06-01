@@ -1,7 +1,9 @@
 package com.Jjambbong.PayLens.document.service;
 
+import com.Jjambbong.PayLens.document.domain.Analysis;
 import com.Jjambbong.PayLens.document.domain.Document;
 import com.Jjambbong.PayLens.document.dto.request.DocumentAnalyzeRequest;
+import com.Jjambbong.PayLens.document.repository.AnalysisRepository;
 import com.Jjambbong.PayLens.document.repository.DocumentRepository;
 import com.Jjambbong.PayLens.global.api.ErrorCode;
 import com.Jjambbong.PayLens.global.exception.GeneralException;
@@ -36,6 +38,7 @@ public class GeminiService {
     private final UserRepository userRepository;
     private final DocumentRepository documentRepository;
     private final SurveyRepository surveyRepository;
+    private final AnalysisRepository analysisRepository;
     private final AnalyzeService analyzeService;
 
     @Deprecated
@@ -210,8 +213,23 @@ public class GeminiService {
                     content,
                     null
             );
+            // 제미나이로부터 받은 JSON 응답 문자열
+            String analysisResultJson = response.text();
 
-            return response.text();
+            // 새로운 분석(Analysis) 객체를 생성
+            Analysis analysis = Analysis.builder()
+                    .user(user)
+                    .resultJson(analysisResultJson)
+                    .build();
+
+            // 이 분석에 사용된 모든 문서(Document)들을 순회하며 관계를 맺어줌
+            for (Document doc : documents) {
+                doc.setAnalysis(analysis);
+            }
+
+            analysisRepository.save(analysis);
+
+            return analysisResultJson;
 
         } catch (Exception e) {
             log.error("Gemini SDK 호출 중 에러 발생: {}", e.getMessage());
