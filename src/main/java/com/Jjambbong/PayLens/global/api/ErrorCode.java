@@ -50,6 +50,7 @@ public enum ErrorCode implements BaseCode { // 실패
     OCR_REQUEST_FAILED(HttpStatus.BAD_GATEWAY, "OCR_5021", "OCR 서버 요청에 실패했습니다."),
     OCR_RESPONSE_INVALID(HttpStatus.BAD_GATEWAY, "OCR_5022", "OCR 서버 응답이 올바르지 않습니다."),
     OCR_RESULT_KEY_MISMATCH(HttpStatus.BAD_GATEWAY, "OCR_5023", "OCR 결과 저장 경로가 일치하지 않습니다."),
+    ANALYSIS_NOT_FOUND(HttpStatus.NOT_FOUND, "DOCUMENT_4043", "아직 해당 문서에 대한 분석 결과가 없습니다."),
 
     // YouTube
     YOUTUBE_API_FAILED(HttpStatus.BAD_GATEWAY, "YOUTUBE_API_FAILED", "YouTube API 호출에 실패했습니다."),
