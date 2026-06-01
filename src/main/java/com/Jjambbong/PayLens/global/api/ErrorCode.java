@@ -43,7 +43,13 @@ public enum ErrorCode implements BaseCode { // 실패
     DOCUMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "DOCUMENT_4041", "문서를 찾을 수 없습니다."),
     DOCUMENT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "DOCUMENT_4031", "해당 문서에 접근할 권한이 없습니다."),
     DOCUMENT_OBJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "DOCUMENT_4042", "S3에서 업로드된 파일을 찾을 수 없습니다."),
+    DOCUMENT_OCR_COUNT_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4007", "OCR 처리할 문서 개수는 1개 이상 10개 이하이어야 합니다."),
+    DOCUMENT_OCR_TARGET_INVALID(HttpStatus.CONFLICT, "DOCUMENT_4092", "OCR 처리할 수 없는 문서 상태입니다."),
+    DOCUMENT_OCR_ALREADY_PROCESSING(HttpStatus.CONFLICT, "DOCUMENT_4093", "이미 OCR 처리가 진행 중인 문서입니다."),
     PRESIGNED_URL_GENERATION_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "DOCUMENT_5031", "문서 업로드 URL 발급에 실패했습니다."),
+    OCR_REQUEST_FAILED(HttpStatus.BAD_GATEWAY, "OCR_5021", "OCR 서버 요청에 실패했습니다."),
+    OCR_RESPONSE_INVALID(HttpStatus.BAD_GATEWAY, "OCR_5022", "OCR 서버 응답이 올바르지 않습니다."),
+    OCR_RESULT_KEY_MISMATCH(HttpStatus.BAD_GATEWAY, "OCR_5023", "OCR 결과 저장 경로가 일치하지 않습니다."),
     ANALYSIS_NOT_FOUND(HttpStatus.NOT_FOUND, "DOCUMENT_4043", "아직 해당 문서에 대한 분석 결과가 없습니다."),
 
     // YouTube

@@ -85,6 +85,13 @@ jwt:
   access-exp-ms: ${JWT_EXPIRATION:3600000}
   refresh-exp-ms: ${JWT_REFRESH_EXPIRATION:1209600000}
 
+#OCR FastAPI
+ocr:
+  fastapi:
+    base-url: ${OCR_FASTAPI_BASE_URL:http://localhost:8000}
+    internal-token: ${OCR_INTERNAL_TOKEN}
+    timeout-seconds: ${OCR_FASTAPI_TIMEOUT_SECONDS:180}
+
 #Gemini
 gemini:
   api:

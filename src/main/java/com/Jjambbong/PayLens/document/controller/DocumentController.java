@@ -2,9 +2,17 @@ package com.Jjambbong.PayLens.document.controller;
 
 import com.Jjambbong.PayLens.document.dto.request.DocumentCompleteRequest;
 import com.Jjambbong.PayLens.document.dto.request.DocumentDeleteRequest;
+import com.Jjambbong.PayLens.document.dto.request.DocumentOcrRequest;
 import com.Jjambbong.PayLens.document.dto.request.DocumentUploadUrlRequest;
 import com.Jjambbong.PayLens.document.dto.request.DocumentUploadUrlsRequest;
-import com.Jjambbong.PayLens.document.dto.response.*;
+import com.Jjambbong.PayLens.document.dto.response.DocumentCompleteListResponse;
+import com.Jjambbong.PayLens.document.dto.response.DocumentCompleteResponse;
+import com.Jjambbong.PayLens.document.dto.response.DocumentDeleteListResponse;
+import com.Jjambbong.PayLens.document.dto.response.DocumentListResponse;
+import com.Jjambbong.PayLens.document.dto.response.DocumentOcrListResponse;
+import com.Jjambbong.PayLens.document.dto.response.DocumentUploadUrlResponse;
+import com.Jjambbong.PayLens.document.dto.response.DocumentUploadUrlsResponse;
+import com.Jjambbong.PayLens.document.service.DocumentOcrService;
 import com.Jjambbong.PayLens.document.service.DocumentService;
 import com.Jjambbong.PayLens.global.api.ApiResponse;
 import com.Jjambbong.PayLens.global.api.SuccessCode;
@@ -27,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DocumentController {
 
     private final DocumentService documentService;
+    private final DocumentOcrService documentOcrService;
 
     @GetMapping
     @Operation(summary = "업로드 문서 목록 조회", description = "사용자가 업로드 완료한 문서 목록을 조회하는 메서드입니다.")
@@ -68,6 +77,15 @@ public class DocumentController {
         return ApiResponse.onSuccess(SuccessCode.DOCUMENT_UPLOAD_COMPLETE_LIST_SUCCESS, response);
     }
 
+    @PostMapping("/ocr")
+    @Operation(summary = "문서 OCR 처리", description = "업로드 완료된 문서 목록에 대해 FastAPI OCR 서버를 호출하고 OCR JSON을 S3에 저장하는 메서드입니다.")
+    public ApiResponse<DocumentOcrListResponse> processOcr(
+            @AuthenticationPrincipal Long userId,
+            @RequestBody DocumentOcrRequest request) {
+        DocumentOcrListResponse response = documentOcrService.processOcr(userId, request);
+        return ApiResponse.onSuccess(SuccessCode.DOCUMENT_OCR_SUCCESS, response);
+    }
+
     @PostMapping("/{documentId}/complete")
     @Deprecated
     @Operation(
@@ -83,7 +101,7 @@ public class DocumentController {
     }
 
     @DeleteMapping
-    @Operation(summary = "문서 삭제", description = "사용자가 업로드한 문서를 S3와 DB에서 삭제하는 메서드입니다.")
+    @Operation(summary = "문서 삭제", description = "사용자가 업로드한 문서를 S3와 DB에서 삭제하는 메서드입니다. 문서의 OCR JSON이 존재할 경우 같이 삭제합니다.")
     public ApiResponse<DocumentDeleteListResponse> deleteDocuments(
             @AuthenticationPrincipal Long userId,
             @RequestBody DocumentDeleteRequest request) {
