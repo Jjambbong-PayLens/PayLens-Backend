@@ -21,10 +21,29 @@ public enum ErrorCode implements BaseCode { // 실패
     TOKEN_INVALID(HttpStatus.FORBIDDEN, "JWT_4032", "유효하지 않은 token입니다."),
     TOKEN_NO_AUTH(HttpStatus.FORBIDDEN, "JWT_4033", "권한 정보가 없는 token입니다."),
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "JWT_4011", "token 유효기간이 만료되었습니다."),
+    EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "AUTH_4091", "해당 이메일로 이미 가입된 계정이 존재합니다. 다른 로그인 방식을 시도해 주세요."), // 추가
 
     // Kakao Login
     KAKAO_AUTH_FAILED(HttpStatus.UNAUTHORIZED, "KAKAO_4011", "카카오 인증에 실패했습니다."),
     KAKAO_API_FAILED(HttpStatus.BAD_GATEWAY, "KAKAO_5021", "카카오 서버 응답에 실패했습니다."),
+
+    // Google Login
+    GOOGLE_AUTH_FAILED(HttpStatus.UNAUTHORIZED, "GOOGLE_4011", "구글 인증에 실패했습니다."),
+    GOOGLE_API_FAILED(HttpStatus.BAD_GATEWAY, "GOOGLE_5021", "구글 서버 응답에 실패했습니다."),
+
+    // Document
+    DOCUMENT_UPLOAD_FILE_COUNT_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4003", "문서 업로드 파일 개수는 1개 이상 10개 이하이어야 합니다."),
+    DOCUMENT_COMPLETE_COUNT_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4004", "완료 처리할 문서 개수는 1개 이상 10개 이하이어야 합니다."),
+    DOCUMENT_DELETE_COUNT_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4005", "삭제할 문서 개수는 1개 이상 10개 이하이어야 합니다."),
+    DOCUMENT_ANALYZE_COUNT_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4006", "분석할 문서 개수는 1개 이상 10개 이하이어야 합니다."),
+    DOCUMENT_INVALID_FILE_NAME(HttpStatus.BAD_REQUEST, "DOCUMENT_4001", "올바르지 않은 파일명입니다."),
+    DOCUMENT_CONTENT_TYPE_NOT_ALLOWED(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "DOCUMENT_4151", "허용되지 않은 파일 형식입니다."),
+    DOCUMENT_TYPE_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4002", "올바르지 않은 문서 유형입니다."),
+    DOCUMENT_UPLOAD_NOT_READY(HttpStatus.CONFLICT, "DOCUMENT_4091", "업로드 완료 처리할 수 없는 문서 상태입니다."),
+    DOCUMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "DOCUMENT_4041", "문서를 찾을 수 없습니다."),
+    DOCUMENT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "DOCUMENT_4031", "해당 문서에 접근할 권한이 없습니다."),
+    DOCUMENT_OBJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "DOCUMENT_4042", "S3에서 업로드된 파일을 찾을 수 없습니다."),
+    PRESIGNED_URL_GENERATION_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "DOCUMENT_5031", "문서 업로드 URL 발급에 실패했습니다."),
 
     // YouTube
     YOUTUBE_API_FAILED(HttpStatus.BAD_GATEWAY, "YOUTUBE_API_FAILED", "YouTube API 호출에 실패했습니다."),

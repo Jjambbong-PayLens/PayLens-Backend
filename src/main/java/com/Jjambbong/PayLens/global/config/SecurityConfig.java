@@ -37,6 +37,7 @@ public class SecurityConfig {
                                 "/login/oauth2/**",
 
                                 "/api/auth/kakao",
+                                "/api/auth/google",       // 구글 로그인 API 경로 추가
                                 "/api/auth/reissue",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
