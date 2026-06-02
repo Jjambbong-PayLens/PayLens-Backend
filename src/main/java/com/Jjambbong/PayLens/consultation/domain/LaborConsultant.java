@@ -53,4 +53,19 @@ public class LaborConsultant {
     @UpdateTimestamp // 데이터가 수정될 때 시간이 자동으로 업데이트된다
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public void update(String name, String officeName, String phone, String email,
+                       String kakaoChannel, String region, String specialties,
+                       String supportedLanguages, String introduction, String status) {
+        this.name = name;
+        this.officeName = officeName;
+        this.phone = phone;
+        this.email = email;
+        this.kakaoChannel = kakaoChannel;
+        this.region = region;
+        this.specialties = specialties;
+        this.supportedLanguages = supportedLanguages;
+        this.introduction = introduction;
+        this.status = status;
+    }
 }

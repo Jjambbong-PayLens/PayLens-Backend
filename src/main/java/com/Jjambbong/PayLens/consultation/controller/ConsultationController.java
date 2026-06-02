@@ -34,9 +34,6 @@ public class ConsultationController {
         consultationService.requestConsultation(realUserId, consultantId, file);
 
         // 3. 팀 공통 응답 포맷(ApiResponse)으로 반환
-        return ApiResponse.onSuccess(
-                SuccessCode.OK,
-                "노무사 매칭 신청 및 리포트 발송이 완료되었습니다."
-        );
+        return ApiResponse.onSuccess(SuccessCode.OK, null);
     }
 }

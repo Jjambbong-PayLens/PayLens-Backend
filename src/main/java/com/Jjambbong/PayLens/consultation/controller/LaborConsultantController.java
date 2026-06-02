@@ -2,6 +2,7 @@ package com.Jjambbong.PayLens.consultation.controller;
 
 import com.Jjambbong.PayLens.consultation.dto.LaborConsultantRequest;
 import com.Jjambbong.PayLens.consultation.dto.LaborConsultantResponse; // 👉 응답용 DTO import (새로 추가)
+import com.Jjambbong.PayLens.consultation.dto.LaborConsultantUpdateRequest;
 import com.Jjambbong.PayLens.consultation.service.LaborConsultantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -55,5 +56,34 @@ public class LaborConsultantController {
 
         // 2. 200 OK 상태 코드와 함께 상세 데이터를 반환합니다.
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 노무사 정보 수정 API
+     * PUT /api/consultants/{id}
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateConsultant(
+            @PathVariable("id") Long id,
+            @Valid @RequestBody LaborConsultantUpdateRequest request) {
+
+        // 1. Service를 호출하여 데이터 수정 반영
+        laborConsultantService.updateConsultant(id, request);
+
+        // 2. 수정이 성공하면 바디 없이 200 OK 상태 코드만 반환
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 노무사 삭제 API
+     * DELETE /api/consultants/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteConsultant(@PathVariable("id") Long id) {
+        // 1. Service를 호출하여 삭제(비활성화) 로직 수행
+        laborConsultantService.deleteConsultant(id);
+
+        // 2. 성공하면 바디 없이 200 OK 상태 코드만 반환
+        return ResponseEntity.ok().build();
     }
 }

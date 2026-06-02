@@ -3,6 +3,7 @@ package com.Jjambbong.PayLens.consultation.service;
 import com.Jjambbong.PayLens.consultation.domain.LaborConsultant;
 import com.Jjambbong.PayLens.consultation.dto.LaborConsultantRequest;
 import com.Jjambbong.PayLens.consultation.dto.LaborConsultantResponse; // 👉 응답용 DTO import (새로 추가)
+import com.Jjambbong.PayLens.consultation.dto.LaborConsultantUpdateRequest;
 import com.Jjambbong.PayLens.consultation.repository.LaborConsultantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -69,5 +70,54 @@ public class LaborConsultantService {
 
         // 2. 찾은 Entity를 DTO로 변환해서 반환합니다.
         return new LaborConsultantResponse(consultant);
+    }
+
+    /**
+     * 노무사 정보 수정 (Update)
+     */
+    @Transactional
+    public void updateConsultant(Long id, LaborConsultantUpdateRequest request) {
+        // 1. 수정할 노무사를 ID로 조회 (없으면 예외 발생)
+        LaborConsultant consultant = laborConsultantRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 노무사를 찾을 수 없습니다. ID: " + id));
+
+        // 2. 조회해 온 Entity의 내용을 수정 요청 데이터로 변경
+        // (Entity 클래스에 이 데이터를 변경하는 메서드를 추가해 줄 것입니다!)
+        consultant.update(
+                request.getName(),
+                request.getOfficeName(),
+                request.getPhone(),
+                request.getEmail(),
+                request.getKakaoChannel(),
+                request.getRegion(),
+                request.getSpecialties(),
+                request.getSupportedLanguages(),
+                request.getIntroduction(),
+                request.getStatus()
+        );
+    }
+
+    /**
+     * 노무사 삭제/비활성화 (Delete)
+     */
+    @Transactional
+    public void deleteConsultant(Long id) {
+        // 1. 삭제할 노무사를 ID로 조회 (없으면 예외 발생)
+        LaborConsultant consultant = laborConsultantRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 노무사를 찾을 수 없습니다. ID: " + id));
+
+        // 2. 완전히 지우는 대신, 활동 상태를 'INACTIVE'로 변경하여 노출되지 않도록 합니다.
+        consultant.update(
+                consultant.getName(),
+                consultant.getOfficeName(),
+                consultant.getPhone(),
+                consultant.getEmail(),
+                consultant.getKakaoChannel(),
+                consultant.getRegion(),
+                consultant.getSpecialties(),
+                consultant.getSupportedLanguages(),
+                consultant.getIntroduction(),
+                "INACTIVE" //상태를 비활성화로 변경
+        );
     }
 }
