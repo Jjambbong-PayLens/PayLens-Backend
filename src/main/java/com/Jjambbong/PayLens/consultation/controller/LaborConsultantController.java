@@ -1,17 +1,20 @@
 package com.Jjambbong.PayLens.consultation.controller;
 
 import com.Jjambbong.PayLens.consultation.dto.LaborConsultantRequest;
-import com.Jjambbong.PayLens.consultation.dto.LaborConsultantResponse; // 👉 응답용 DTO import (새로 추가)
+import com.Jjambbong.PayLens.consultation.dto.LaborConsultantResponse;
 import com.Jjambbong.PayLens.consultation.dto.LaborConsultantUpdateRequest;
 import com.Jjambbong.PayLens.consultation.service.LaborConsultantService;
+import com.Jjambbong.PayLens.global.api.ApiResponse;
+import com.Jjambbong.PayLens.global.api.SuccessCode;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Labor Consultant API", description = "제휴 노무사 관리(CRUD) API")
 @RestController
 @RequestMapping("/api/consultants")
 @RequiredArgsConstructor
@@ -21,69 +24,59 @@ public class LaborConsultantController {
 
     /**
      * 노무사 등록 API
-     * POST /api/consultants
      */
+    @Operation(summary = "노무사 등록", description = "새로운 제휴 노무사 정보를 PayLens 시스템에 등록합니다.")
     @PostMapping
-    public ResponseEntity<Long> createConsultant(@Valid @RequestBody LaborConsultantRequest request) {
-        // 1. Service로 데이터를 넘겨서 비즈니스 로직(DB 저장) 수행
+    public ApiResponse<Long> createConsultant(@Valid @RequestBody LaborConsultantRequest request) {
         Long consultantId = laborConsultantService.registerConsultant(request);
-
-        // 2. 저장이 완료되면 생성된 노무사의 ID와 함께 201 Created 상태 코드를 반환
-        return ResponseEntity.status(HttpStatus.CREATED).body(consultantId);
+        // ResponseEntity 대신 ApiResponse.onSuccess 사용
+        // result 자리에 생성된 ID를 넣어줍니다.
+        return ApiResponse.onSuccess(SuccessCode.OK, consultantId);
     }
 
     /**
      * 전체 노무사 목록 조회 API
-     * GET /api/consultants
      */
+    @Operation(summary = "노무사 전체 목록 조회", description = "시스템에 등록된 모든 제휴 노무사 목록을 조회합니다.")
     @GetMapping
-    public ResponseEntity<List<LaborConsultantResponse>> getAllConsultants() {
-        // 1. Service를 호출하여 모든 노무사 목록 DTO를 가져옵니다.
+    public ApiResponse<List<LaborConsultantResponse>> getAllConsultants() {
         List<LaborConsultantResponse> responses = laborConsultantService.getAllConsultants();
-
-        // 2. 200 OK 상태 코드와 함께 목록 데이터를 반환합니다.
-        return ResponseEntity.ok(responses);
+        // result 자리에 목록(responses)을 넣어줍니다.
+        return ApiResponse.onSuccess(SuccessCode.OK, responses);
     }
 
     /**
      * 특정 노무사 상세 조회 API
-     * GET /api/consultants/{id}
      */
+    @Operation(summary = "노무사 단건 상세 조회", description = "특정 노무사의 상세 정보를 ID를 통해 조회합니다.")
     @GetMapping("/{id}")
-    public ResponseEntity<LaborConsultantResponse> getConsultantById(@PathVariable("id") Long id) {
-        // 1. URL 경로에 있는 id 값을 Service로 넘겨서 상세 정보를 가져옵니다.
+    public ApiResponse<LaborConsultantResponse> getConsultantById(@PathVariable("id") Long id) {
         LaborConsultantResponse response = laborConsultantService.getConsultantById(id);
-
-        // 2. 200 OK 상태 코드와 함께 상세 데이터를 반환합니다.
-        return ResponseEntity.ok(response);
+        // result 자리에 단건 정보(response)를 넣어줍니다.
+        return ApiResponse.onSuccess(SuccessCode.OK, response);
     }
 
     /**
      * 노무사 정보 수정 API
-     * PUT /api/consultants/{id}
      */
+    @Operation(summary = "노무사 정보 수정", description = "특정 노무사의 정보를 수정(업데이트)합니다.")
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateConsultant(
+    public ApiResponse<Object> updateConsultant(
             @PathVariable("id") Long id,
             @Valid @RequestBody LaborConsultantUpdateRequest request) {
-
-        // 1. Service를 호출하여 데이터 수정 반영
         laborConsultantService.updateConsultant(id, request);
-
-        // 2. 수정이 성공하면 바디 없이 200 OK 상태 코드만 반환
-        return ResponseEntity.ok().build();
+        // 반환할 데이터가 없으므로 result 자리에 null을 전달합니다.
+        return ApiResponse.onSuccess(SuccessCode.OK, null);
     }
 
     /**
      * 노무사 삭제 API
-     * DELETE /api/consultants/{id}
      */
+    @Operation(summary = "노무사 삭제 (소프트 딜리트)", description = "특정 노무사의 활동 상태를 비활성화(INACTIVE) 처리하여 안전하게 삭제합니다.")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteConsultant(@PathVariable("id") Long id) {
-        // 1. Service를 호출하여 삭제(비활성화) 로직 수행
+    public ApiResponse<Object> deleteConsultant(@PathVariable("id") Long id) {
         laborConsultantService.deleteConsultant(id);
-
-        // 2. 성공하면 바디 없이 200 OK 상태 코드만 반환
-        return ResponseEntity.ok().build();
+        // 반환할 데이터가 없으므로 result 자리에 null을 전달합니다.
+        return ApiResponse.onSuccess(SuccessCode.OK, null);
     }
 }
