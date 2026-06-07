@@ -41,6 +41,13 @@ public enum SuccessCode implements BaseCode { // 성공
     // Category
     CATEGORY_LIST_GET_SUCCESS(HttpStatus.OK, "CATEGORY_2001", "카테고리 목록 조회가 완료되었습니다."),
 
+    // Notice
+    NOTICE_CREATE_SUCCESS(HttpStatus.CREATED, "NOTICE_2011", "공지사항 생성이 완료되었습니다."),
+    NOTICE_LIST_GET_SUCCESS(HttpStatus.OK, "NOTICE_2001", "공지사항 목록 조회가 완료되었습니다."),
+    NOTICE_GET_SUCCESS(HttpStatus.OK, "NOTICE_2002", "공지사항 상세 조회가 완료되었습니다"),
+    NOTICE_UPDATE_SUCCESS(HttpStatus.OK, "NOTICE_2003", "공지사항 수정이 완료되었습니다."),
+    NOTICE_DELETE_SUCCESS(HttpStatus.OK, "NOTICE_2004", "공지사항 삭제가 완료되었습니다."),
+
     // 투두
     TODO_LIST_GET_SUCCESS(HttpStatus.OK, "TODO_2001", "투두 목록 조회가 완료되었습니다."),
     TODO_DETAIL_GET_SUCCESS(HttpStatus.OK, "TODO_2002", "투두 상세 조회가 완료되었습니다."),

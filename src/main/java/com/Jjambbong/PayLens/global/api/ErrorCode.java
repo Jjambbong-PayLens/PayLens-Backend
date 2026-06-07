@@ -31,6 +31,9 @@ public enum ErrorCode implements BaseCode { // 실패
     GOOGLE_AUTH_FAILED(HttpStatus.UNAUTHORIZED, "GOOGLE_4011", "구글 인증에 실패했습니다."),
     GOOGLE_API_FAILED(HttpStatus.BAD_GATEWAY, "GOOGLE_5021", "구글 서버 응답에 실패했습니다."),
 
+    // Notice
+    NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTICE_4041", "공지사항을 찾을 수 없습니다."),
+
     // Document
     DOCUMENT_UPLOAD_FILE_COUNT_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4003", "문서 업로드 파일 개수는 1개 이상 10개 이하이어야 합니다."),
     DOCUMENT_COMPLETE_COUNT_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4004", "완료 처리할 문서 개수는 1개 이상 10개 이하이어야 합니다."),
