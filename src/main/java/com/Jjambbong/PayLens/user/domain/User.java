@@ -1,8 +1,14 @@
 package com.Jjambbong.PayLens.user.domain;
 
+import com.Jjambbong.PayLens.document.domain.Document;
+import com.Jjambbong.PayLens.payment.domain.Payment;
+import com.Jjambbong.PayLens.survey.domain.Survey;
 import jakarta.persistence.*;
 import lombok.*;
 import com.Jjambbong.PayLens.Entity.BaseEntity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -15,6 +21,15 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long Id;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Survey survey;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Payment> payments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Document> documents = new ArrayList<>();
 
     @Column(nullable = false, unique = true)
     private String providerId;
