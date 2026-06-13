@@ -24,6 +24,9 @@ public class AnalysisResponse {
     }
 
     private Object convertStringToJson(String jsonString, ObjectMapper objectMapper) {
+        if (jsonString == null || jsonString.isBlank()) {
+            return null;
+        }
         try {
             return objectMapper.readValue(jsonString, Object.class);
         } catch (JsonProcessingException e) {
