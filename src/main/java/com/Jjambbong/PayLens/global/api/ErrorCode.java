@@ -54,6 +54,11 @@ public enum ErrorCode implements BaseCode { // 실패
     OCR_RESPONSE_INVALID(HttpStatus.BAD_GATEWAY, "OCR_5022", "OCR 서버 응답이 올바르지 않습니다."),
     OCR_RESULT_KEY_MISMATCH(HttpStatus.BAD_GATEWAY, "OCR_5023", "OCR 결과 저장 경로가 일치하지 않습니다."),
     ANALYSIS_NOT_FOUND(HttpStatus.NOT_FOUND, "DOCUMENT_4043", "아직 해당 문서에 대한 분석 결과가 없습니다."),
+    DOCUMENT_ANALYZE_OCR_REQUIRED(HttpStatus.CONFLICT, "DOCUMENT_4094", "OCR 완료 후 분석할 수 있습니다."),
+    GEMINI_FIELD_EXTRACTION_FAILED(HttpStatus.BAD_GATEWAY, "GEMINI_5021", "Gemini 필드 추출 요청에 실패했습니다."),
+    GEMINI_RESPONSE_INVALID(HttpStatus.BAD_GATEWAY, "GEMINI_5022", "Gemini 응답이 올바르지 않습니다."),
+    GEMINI_REVIEW_STATUS_INVALID(HttpStatus.CONFLICT, "GEMINI_4091", "사용자 검증을 처리할 수 없는 분석 상태입니다."),
+    GEMINI_ANALYZE_STATUS_INVALID(HttpStatus.CONFLICT, "GEMINI_4092", "최종 분석을 실행할 수 없는 분석 상태입니다."),
 
     // YouTube
     YOUTUBE_API_FAILED(HttpStatus.BAD_GATEWAY, "YOUTUBE_API_FAILED", "YouTube API 호출에 실패했습니다."),

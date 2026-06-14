@@ -30,6 +30,10 @@ public enum SuccessCode implements BaseCode { // 성공
     // gemini
     DOCUMENT_ANALYZE_SUCCESS(HttpStatus.OK, "DOCUMENT_2002", "문서 분석이 완료되었습니다"),
     DOCUMENT_ANALYZE_GET_SUCCESS(HttpStatus.OK, "DOCUMENT_2006", "문서 분석 결과 조회가 완료되었습니다."),
+    GEMINI_CROSS_CHECK_SUCCESS(HttpStatus.OK, "GEMINI_2001", "문서 필드 추출 및 교차 검증이 완료되었습니다."),
+    GEMINI_REVIEW_GET_SUCCESS(HttpStatus.OK, "GEMINI_2002", "사용자 검증 정보 조회가 완료되었습니다."),
+    GEMINI_REVIEW_SUBMIT_SUCCESS(HttpStatus.OK, "GEMINI_2003", "사용자 검증 정보가 저장되었습니다."),
+    GEMINI_FINAL_ANALYZE_SUCCESS(HttpStatus.OK, "GEMINI_2004", "Gemini 최종 문서 분석이 완료되었습니다."),
 
     // profile success
     PROFILE_PUT_SUCCESS(HttpStatus.OK, "PROFILE_2001", "프로필 수정(추가)이 완료되었습니다."),
