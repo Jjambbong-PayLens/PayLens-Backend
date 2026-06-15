@@ -30,4 +30,17 @@ public class UserController {
 
         return ApiResponse.onSuccess(SuccessCode.USER_LANGUAGE_UPDATE_SUCCESS, null);
     }
+
+    // 노무사 등업 신청
+    @PostMapping("/labor/apply")
+    @Operation(summary = "노무사 등업 신청 API", description = "증빙 서류 업로드 후 노무사 승인 대기 상태로 전환합니다.")
+    public ApiResponse<Object> applyForLaborAttorney(
+            @Parameter(hidden = true) @AuthenticationPrincipal Long userId) {
+
+        // 1. 서비스 로직 호출 (상태를 PENDING으로 변경)
+        userService.applyForLaborAttorney(userId);
+
+        // 2. 성공 응답 반환
+        return ApiResponse.onSuccess(SuccessCode.LABOR_APPLY_SUCCESS, null);
+    }
 }

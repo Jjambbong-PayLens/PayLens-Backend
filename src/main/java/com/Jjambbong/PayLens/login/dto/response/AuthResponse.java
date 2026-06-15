@@ -1,5 +1,6 @@
 package com.Jjambbong.PayLens.login.dto.response;
 
+import com.Jjambbong.PayLens.user.domain.LaborApproveStatus; // 👉 새로 추가된 import
 import com.Jjambbong.PayLens.user.domain.User;
 import com.Jjambbong.PayLens.user.domain.UserRole;
 import lombok.Builder;
@@ -12,6 +13,9 @@ public class AuthResponse {
     private String username;
     private String providerId;
     private UserRole role;
+
+    private LaborApproveStatus laborApproveStatus;
+
     private String accessToken;
 
     public static AuthResponse from(User user, String accessToken) {
@@ -20,6 +24,7 @@ public class AuthResponse {
                 .username(user.getUsername())
                 .providerId(user.getProviderId())
                 .role(user.getRole())
+                .laborApproveStatus(user.getLaborApproveStatus())
                 .accessToken(accessToken)
                 .build();
     }
