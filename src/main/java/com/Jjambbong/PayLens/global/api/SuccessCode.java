@@ -61,6 +61,12 @@ public enum SuccessCode implements BaseCode { // 성공
     TODO_DELETE_SUCCESS(HttpStatus.OK, "TODO_2005", "투두 삭제가 완료되었습니다."),
     TODO_DETAIL_UPDATE_SUCCESS(HttpStatus.OK, "TODO_2006", "투두 상세 수정이 완료되었습니다."),
 
+    // 노무사 승인
+    LABOR_APPLY_SUCCESS(HttpStatus.OK, "USER_2001", "노무사 등업 신청이 완료되었습니다."),
+
+    // Admin (관리자 노무사 승인/거절)
+    LABOR_APPROVE_SUCCESS(HttpStatus.OK, "ADMIN_2001", "노무사 가입이 승인되었습니다."),
+    LABOR_REJECT_SUCCESS(HttpStatus.OK, "ADMIN_2002", "노무사 가입이 거절되었습니다."),
     ;
 
     private final HttpStatus httpStatus;

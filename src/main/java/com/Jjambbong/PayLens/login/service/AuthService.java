@@ -1,6 +1,7 @@
 package com.Jjambbong.PayLens.login.service;
 
 import com.Jjambbong.PayLens.user.domain.Language;
+import com.Jjambbong.PayLens.user.domain.LaborApproveStatus;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import com.Jjambbong.PayLens.global.api.ErrorCode;
@@ -73,7 +74,7 @@ public class AuthService {
     }
 
     private AuthResponse processUserLogin(String providerId, String username, String email) {
-        
+
         // 1. 먼저 providerId로 유저를 찾습니다.
         Optional<User> existingUser = userRepository.findByProviderId(providerId);
         User user;
@@ -81,6 +82,10 @@ public class AuthService {
         if (existingUser.isPresent()) {
             // 2-a. 해당 providerId로 이미 가입된 유저가 있으면 그대로 사용
             user = existingUser.get();
+
+            // (참고) 만약 어드민에게 노무사 승인 거절(REJECTED) 당한 유저의 로그인을 막고 싶다면
+            // 이곳에 if (user.getLaborApproveStatus() == LaborApproveStatus.REJECTED) { throw ... } 를 추가하시면 됩니다.
+
         } else {
             // 2-b. providerId로 가입된 내역이 없을 경우, 이메일 중복 검사를 합니다.
             if (userRepository.findByEmail(email).isPresent()) {
@@ -107,10 +112,11 @@ public class AuthService {
         User user = User.builder()
                 .providerId(providerId)
                 .username(username)
-                .email(email) // User 엔티티에 email이 nullable=false이므로 추가
-                .role(UserRole.USER) // Role 기본값 추가
-                .status(UserStatus.ACTIVE) // Status 기본값 추가
-                .preferredLanguage(Language.KO) // 기본 언어 설정 추가
+                .email(email)
+                .role(UserRole.USER)
+                .status(UserStatus.ACTIVE)
+                .preferredLanguage(Language.KO)
+                .laborApproveStatus(LaborApproveStatus.NONE) //최초 가입 시 노무사 승인 상태 기본값
                 .build();
 
         return userRepository.save(user);
@@ -166,7 +172,6 @@ public class AuthService {
 
         return jwtProvider.createAccessToken(userId);
     }
-
 
     // accessToken 내 userId 추출 후 refreshToken 삭제
     public void logout(HttpServletRequest request) {

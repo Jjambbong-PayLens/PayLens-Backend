@@ -102,7 +102,11 @@ public enum ErrorCode implements BaseCode { // 실패
     TODO_DATE_REQUIRED(HttpStatus.BAD_REQUEST, "TODO_4007", "일반 투두는 날짜 입력이 필수입니다."),
     TODO_ROUTINE_TO_NORMAL_NOT_SUPPORTED(HttpStatus.BAD_REQUEST, "TODO_4008", "루틴 투두는 일반 투두로 변경할 수 없습니다. 필요하면 루틴 투두를 삭제하고 원하는 날짜로 일반 투두를 새로 생성해주세요."),
     TODO_DATE_NOT_FOUND(HttpStatus.NOT_FOUND, "TODO_4042", "해당 날짜의 투두 기록을 찾을 수 없습니다."),
-    ;
+
+    // Labor (노무사 관련)
+    PENDING_ALREADY_EXISTS(HttpStatus.CONFLICT, "LABOR_4091", "이미 노무사 승인 대기 중인 상태입니다."),
+    ALREADY_APPROVED_LABOR(HttpStatus.CONFLICT, "LABOR_4092", "이미 승인된 노무사 회원입니다.");
+
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;
