@@ -6,12 +6,13 @@ import com.Jjambbong.PayLens.user.domain.LaborApproveStatus;
 import com.Jjambbong.PayLens.user.domain.Language;
 import com.Jjambbong.PayLens.user.domain.User;
 import com.Jjambbong.PayLens.user.domain.UserRole;
+import com.Jjambbong.PayLens.user.dto.response.UserInfoResponse;
 import com.Jjambbong.PayLens.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List; // 추가된 import
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +20,13 @@ import java.util.List; // 추가된 import
 public class UserService {
 
     private final UserRepository userRepository;
+
+    @Transactional(readOnly = true)
+    public UserInfoResponse getUserInfo(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
+        return new UserInfoResponse(user);
+    }
 
     public void updateUserLanguage(Long userId, Language language) {
         User user = userRepository.findById(userId)
