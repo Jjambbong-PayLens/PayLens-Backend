@@ -67,6 +67,7 @@ public enum SuccessCode implements BaseCode { // 성공
     // Admin (관리자 노무사 승인/거절)
     LABOR_APPROVE_SUCCESS(HttpStatus.OK, "ADMIN_2001", "노무사 가입이 승인되었습니다."),
     LABOR_REJECT_SUCCESS(HttpStatus.OK, "ADMIN_2002", "노무사 가입이 거절되었습니다."),
+    LABOR_PENDING_LIST_SUCCESS(HttpStatus.OK, "ADMIN_2003", "노무사 가입 대기 목록 조회가 완료되었습니다."),
     ;
 
     private final HttpStatus httpStatus;

@@ -5,11 +5,13 @@ import com.Jjambbong.PayLens.global.exception.GeneralException;
 import com.Jjambbong.PayLens.user.domain.LaborApproveStatus;
 import com.Jjambbong.PayLens.user.domain.Language;
 import com.Jjambbong.PayLens.user.domain.User;
-import com.Jjambbong.PayLens.user.domain.UserRole; // 👉 노무사 권한 부여를 위해 UserRole import 추가!
+import com.Jjambbong.PayLens.user.domain.UserRole;
 import com.Jjambbong.PayLens.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List; // 추가된 import
 
 @Service
 @RequiredArgsConstructor
@@ -69,5 +71,12 @@ public class UserService {
 
         // 상태를 '거절됨'으로 변경
         user.updateLaborApproveStatus(LaborApproveStatus.REJECTED);
+    }
+
+    // 어드민: 노무사 가입 대기 목록 조회
+    @Transactional(readOnly = true)
+    public List<User> getPendingLaborApplications() {
+        // Repository를 통해 PENDING 상태인 유저들만 리스트 형태로 반환
+        return userRepository.findByLaborApproveStatus(LaborApproveStatus.PENDING);
     }
 }
