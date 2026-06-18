@@ -194,7 +194,7 @@ public class GeminiPipelineService {
                     .build();
 
             GenerateContentResponse response = client.models.generateContent(
-                    "gemini-3.5-flash",
+                    "gemini-3-flash-preview",
                     content,
                     null
             );
