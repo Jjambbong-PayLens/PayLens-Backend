@@ -2,6 +2,7 @@ package com.Jjambbong.PayLens.global.config;
 
 import com.Jjambbong.PayLens.login.jwt.JwtValidationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -49,9 +50,12 @@ public class SecurityConfig {
                                 "/health",
                                 "/api/consultation/**",
                                 "/api/consultants/**",
-                                "/api/test/**",
-                                "/api/notices/**"
+                                "/api/test/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/notices/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/notices").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/notices/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/notices/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtValidationFilter, UsernamePasswordAuthenticationFilter.class);

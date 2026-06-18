@@ -39,7 +39,7 @@ public class NoticeController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "공지사항 작성 (관리자용)")
+    @Operation(summary = "공지사항 작성 (관리자용)", description = "ADMIN 권한을 가진 사용자만 작성할 수 있습니다. Authorization 헤더에 Bearer accessToken이 필요합니다.")
     public ApiResponse<Long> createNotice(@Valid @RequestBody NoticeRequest request) {
         Long noticeId = noticeService.createNotice(request).getId();
         return ApiResponse.onSuccess(SuccessCode.NOTICE_CREATE_SUCCESS, noticeId);
@@ -47,7 +47,7 @@ public class NoticeController {
 
     @PutMapping("/{noticeId}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "공지사항 수정 (관리자용)")
+    @Operation(summary = "공지사항 수정 (관리자용)", description = "ADMIN 권한을 가진 사용자만 수정할 수 있습니다. Authorization 헤더에 Bearer accessToken이 필요합니다.")
     public ApiResponse<Long> updateNotice(@PathVariable Long noticeId, @Valid @RequestBody NoticeRequest request) {
         Long updatedNoticeId = noticeService.updateNotice(noticeId, request).getId();
         return ApiResponse.onSuccess(SuccessCode.NOTICE_UPDATE_SUCCESS, updatedNoticeId);
@@ -55,7 +55,7 @@ public class NoticeController {
 
     @DeleteMapping("/{noticeId}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "공지사항 삭제 (관리자용)")
+    @Operation(summary = "공지사항 삭제 (관리자용)", description = "ADMIN 권한을 가진 사용자만 삭제할 수 있습니다. Authorization 헤더에 Bearer accessToken이 필요합니다.")
     public ApiResponse<Void> deleteNotice(@PathVariable Long noticeId) {
         noticeService.deleteNotice(noticeId);
         return ApiResponse.onSuccess(SuccessCode.NOTICE_DELETE_SUCCESS, null);
