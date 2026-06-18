@@ -38,7 +38,7 @@ public class NoticeController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "공지사항 작성 (관리자용)")
     public ApiResponse<Long> createNotice(@Valid @RequestBody NoticeRequest request) {
         Long noticeId = noticeService.createNotice(request).getId();
@@ -46,7 +46,7 @@ public class NoticeController {
     }
 
     @PutMapping("/{noticeId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "공지사항 수정 (관리자용)")
     public ApiResponse<Long> updateNotice(@PathVariable Long noticeId, @Valid @RequestBody NoticeRequest request) {
         Long updatedNoticeId = noticeService.updateNotice(noticeId, request).getId();
@@ -54,7 +54,7 @@ public class NoticeController {
     }
 
     @DeleteMapping("/{noticeId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "공지사항 삭제 (관리자용)")
     public ApiResponse<Void> deleteNotice(@PathVariable Long noticeId) {
         noticeService.deleteNotice(noticeId);
