@@ -6,6 +6,7 @@ import com.Jjambbong.PayLens.user.domain.LaborApproveStatus;
 import com.Jjambbong.PayLens.user.domain.Language;
 import com.Jjambbong.PayLens.user.domain.User;
 import com.Jjambbong.PayLens.user.domain.UserRole;
+import com.Jjambbong.PayLens.user.dto.response.LaborPendingResponse;
 import com.Jjambbong.PayLens.user.dto.response.UserInfoResponse;
 import com.Jjambbong.PayLens.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -83,8 +84,10 @@ public class UserService {
 
     // 어드민: 노무사 가입 대기 목록 조회
     @Transactional(readOnly = true)
-    public List<User> getPendingLaborApplications() {
-        // Repository를 통해 PENDING 상태인 유저들만 리스트 형태로 반환
-        return userRepository.findByLaborApproveStatus(LaborApproveStatus.PENDING);
+    public List<LaborPendingResponse> getPendingLaborApplications() {
+        // 엔티티를 직접 노출하지 않고 관리자 화면에 필요한 값만 응답한다.
+        return userRepository.findByLaborApproveStatus(LaborApproveStatus.PENDING).stream()
+                .map(LaborPendingResponse::from)
+                .toList();
     }
 }
