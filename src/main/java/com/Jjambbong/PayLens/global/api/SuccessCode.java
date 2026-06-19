@@ -9,6 +9,11 @@ import org.springframework.http.HttpStatus;
 public enum SuccessCode implements BaseCode { // 성공
     OK(HttpStatus.OK, "COMMON_200", "Success"),
     CREATED(HttpStatus.CREATED, "COMMON_201", "Created"),
+    DOCUMENT_UPLOAD_URLS_CREATED(HttpStatus.CREATED, "DOCUMENT_2012", "문서 업로드 URL 목록이 발급되었습니다."),
+    DOCUMENT_UPLOAD_COMPLETE_LIST_SUCCESS(HttpStatus.OK, "DOCUMENT_2003", "문서 업로드 목록이 완료되었습니다."),
+    DOCUMENT_LIST_GET_SUCCESS(HttpStatus.OK, "DOCUMENT_2004", "문서 목록 조회가 완료되었습니다."),
+    DOCUMENT_DELETE_SUCCESS(HttpStatus.OK, "DOCUMENT_2005", "문서 삭제가 완료되었습니다."),
+    DOCUMENT_OCR_SUCCESS(HttpStatus.OK, "DOCUMENT_2006", "문서 OCR 처리가 완료되었습니다."),
 
     USER_LOGIN_SUCCESS(HttpStatus.CREATED, "USER_2011", "회원가입& 로그인이 완료되었습니다."),
     USER_LOGOUT_SUCCESS(HttpStatus.OK, "USER_2001", "로그아웃 되었습니다."),
@@ -16,11 +21,19 @@ public enum SuccessCode implements BaseCode { // 성공
     USER_DELETE_SUCCESS(HttpStatus.OK, "USER_2003", "회원탈퇴가 완료되었습니다."),
     USER_PROFILE_UPDATE_SUCCESS(HttpStatus.OK, "USER_2006", "프로필 저장이 완료되었습니다."),
     USER_INFO_GET_SUCCESS(HttpStatus.OK, "USER_2007", "유저 정보 조회가 완료되었습니다."),
+    USER_LANGUAGE_UPDATE_SUCCESS(HttpStatus.OK, "USER_2004", "사용자 언어 설정이 변경되었습니다."), // 추가된 코드
+    USER_SURVEY_UPDATE_SUCCESS(HttpStatus.OK, "USER_2005", "사용자 문진 내역이 저장되었습니다."), // 추가된 코드
 
-    FOLLOW_ADD_SUCCESS(HttpStatus.CREATED,"FOLLOW_2011","팔로우 추가가 완료되었습니다."),
-    FOLLOW_DELETE_SUCCESS(HttpStatus.OK, "FOLLOW_2001", "언팔로우가 완료되었습니다."),
-    FOLLOW_LIST_GET_SUCCESS(HttpStatus.OK, "FOLLOW_2002", "팔로우 목록 조회가 완료되었습니다."),
-    FOLLOW_SEARCH_SUCCESS(HttpStatus.OK, "FOLLOW_2003", "팔로우 가능한 유저 검색이 완료되었습니다."),
+    DOCUMENT_UPLOAD_URL_CREATED(HttpStatus.CREATED, "DOCUMENT_2011", "문서 업로드 URL이 발급되었습니다."),
+    DOCUMENT_UPLOAD_COMPLETE_SUCCESS(HttpStatus.OK, "DOCUMENT_2001", "문서 업로드가 완료되었습니다."),
+
+    // gemini
+    DOCUMENT_ANALYZE_SUCCESS(HttpStatus.OK, "DOCUMENT_2002", "문서 분석이 완료되었습니다"),
+    DOCUMENT_ANALYZE_GET_SUCCESS(HttpStatus.OK, "DOCUMENT_2006", "문서 분석 결과 조회가 완료되었습니다."),
+    GEMINI_CROSS_CHECK_SUCCESS(HttpStatus.OK, "GEMINI_2001", "문서 필드 추출 및 교차 검증이 완료되었습니다."),
+    GEMINI_REVIEW_GET_SUCCESS(HttpStatus.OK, "GEMINI_2002", "사용자 검증 정보 조회가 완료되었습니다."),
+    GEMINI_REVIEW_SUBMIT_SUCCESS(HttpStatus.OK, "GEMINI_2003", "사용자 검증 정보가 저장되었습니다."),
+    GEMINI_FINAL_ANALYZE_SUCCESS(HttpStatus.OK, "GEMINI_2004", "Gemini 최종 문서 분석이 완료되었습니다."),
 
     // profile success
     PROFILE_PUT_SUCCESS(HttpStatus.OK, "PROFILE_2001", "프로필 수정(추가)이 완료되었습니다."),
@@ -32,6 +45,13 @@ public enum SuccessCode implements BaseCode { // 성공
     // Category
     CATEGORY_LIST_GET_SUCCESS(HttpStatus.OK, "CATEGORY_2001", "카테고리 목록 조회가 완료되었습니다."),
 
+    // Notice
+    NOTICE_CREATE_SUCCESS(HttpStatus.CREATED, "NOTICE_2011", "공지사항 생성이 완료되었습니다."),
+    NOTICE_LIST_GET_SUCCESS(HttpStatus.OK, "NOTICE_2001", "공지사항 목록 조회가 완료되었습니다."),
+    NOTICE_GET_SUCCESS(HttpStatus.OK, "NOTICE_2002", "공지사항 상세 조회가 완료되었습니다"),
+    NOTICE_UPDATE_SUCCESS(HttpStatus.OK, "NOTICE_2003", "공지사항 수정이 완료되었습니다."),
+    NOTICE_DELETE_SUCCESS(HttpStatus.OK, "NOTICE_2004", "공지사항 삭제가 완료되었습니다."),
+
     // 투두
     TODO_LIST_GET_SUCCESS(HttpStatus.OK, "TODO_2001", "투두 목록 조회가 완료되었습니다."),
     TODO_DETAIL_GET_SUCCESS(HttpStatus.OK, "TODO_2002", "투두 상세 조회가 완료되었습니다."),
@@ -41,6 +61,13 @@ public enum SuccessCode implements BaseCode { // 성공
     TODO_DELETE_SUCCESS(HttpStatus.OK, "TODO_2005", "투두 삭제가 완료되었습니다."),
     TODO_DETAIL_UPDATE_SUCCESS(HttpStatus.OK, "TODO_2006", "투두 상세 수정이 완료되었습니다."),
 
+    // 노무사 승인
+    LABOR_APPLY_SUCCESS(HttpStatus.OK, "USER_2001", "노무사 등업 신청이 완료되었습니다."),
+
+    // Admin (관리자 노무사 승인/거절)
+    LABOR_APPROVE_SUCCESS(HttpStatus.OK, "ADMIN_2001", "노무사 가입이 승인되었습니다."),
+    LABOR_REJECT_SUCCESS(HttpStatus.OK, "ADMIN_2002", "노무사 가입이 거절되었습니다."),
+    LABOR_PENDING_LIST_SUCCESS(HttpStatus.OK, "ADMIN_2003", "노무사 가입 대기 목록 조회가 완료되었습니다."),
     ;
 
     private final HttpStatus httpStatus;

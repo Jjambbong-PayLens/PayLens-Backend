@@ -1,5 +1,7 @@
 package com.Jjambbong.PayLens.login.jwt;
 
+import com.Jjambbong.PayLens.user.domain.User;
+import com.Jjambbong.PayLens.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -12,18 +14,20 @@ import com.Jjambbong.PayLens.global.api.ApiResponse;
 import com.Jjambbong.PayLens.global.api.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class JwtValidationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(
@@ -47,13 +51,15 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 
             // userId 추출
             Long userId = jwtProvider.getUserId(token);
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
             // 인증 등록
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
                             userId,                     // principal(주체): userId
                             null,                       // 비밀번호같은 민감값: 없음
-                            Collections.emptyList()     // 권한(role): 없음
+                            List.of(new SimpleGrantedAuthority(user.getRole().name()))    // 권한(role)
                     );
 
             // 시큐리티 컨텍스트에 등록: @AuthenticationPrincipal 같은 걸로 인증 정보 접근 가능해짐.

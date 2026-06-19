@@ -21,10 +21,44 @@ public enum ErrorCode implements BaseCode { // 실패
     TOKEN_INVALID(HttpStatus.FORBIDDEN, "JWT_4032", "유효하지 않은 token입니다."),
     TOKEN_NO_AUTH(HttpStatus.FORBIDDEN, "JWT_4033", "권한 정보가 없는 token입니다."),
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "JWT_4011", "token 유효기간이 만료되었습니다."),
+    EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "AUTH_4091", "해당 이메일로 이미 가입된 계정이 존재합니다. 다른 로그인 방식을 시도해 주세요."), // 추가
 
     // Kakao Login
     KAKAO_AUTH_FAILED(HttpStatus.UNAUTHORIZED, "KAKAO_4011", "카카오 인증에 실패했습니다."),
     KAKAO_API_FAILED(HttpStatus.BAD_GATEWAY, "KAKAO_5021", "카카오 서버 응답에 실패했습니다."),
+
+    // Google Login
+    GOOGLE_AUTH_FAILED(HttpStatus.UNAUTHORIZED, "GOOGLE_4011", "구글 인증에 실패했습니다."),
+    GOOGLE_API_FAILED(HttpStatus.BAD_GATEWAY, "GOOGLE_5021", "구글 서버 응답에 실패했습니다."),
+
+    // Notice
+    NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTICE_4041", "공지사항을 찾을 수 없습니다."),
+
+    // Document
+    DOCUMENT_UPLOAD_FILE_COUNT_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4003", "문서 업로드 파일 개수는 1개 이상 10개 이하이어야 합니다."),
+    DOCUMENT_COMPLETE_COUNT_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4004", "완료 처리할 문서 개수는 1개 이상 10개 이하이어야 합니다."),
+    DOCUMENT_DELETE_COUNT_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4005", "삭제할 문서 개수는 1개 이상 10개 이하이어야 합니다."),
+    DOCUMENT_ANALYZE_COUNT_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4006", "분석할 문서 개수는 1개 이상 10개 이하이어야 합니다."),
+    DOCUMENT_INVALID_FILE_NAME(HttpStatus.BAD_REQUEST, "DOCUMENT_4001", "올바르지 않은 파일명입니다."),
+    DOCUMENT_CONTENT_TYPE_NOT_ALLOWED(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "DOCUMENT_4151", "허용되지 않은 파일 형식입니다."),
+    DOCUMENT_TYPE_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4002", "올바르지 않은 문서 유형입니다."),
+    DOCUMENT_UPLOAD_NOT_READY(HttpStatus.CONFLICT, "DOCUMENT_4091", "업로드 완료 처리할 수 없는 문서 상태입니다."),
+    DOCUMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "DOCUMENT_4041", "문서를 찾을 수 없습니다."),
+    DOCUMENT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "DOCUMENT_4031", "해당 문서에 접근할 권한이 없습니다."),
+    DOCUMENT_OBJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "DOCUMENT_4042", "S3에서 업로드된 파일을 찾을 수 없습니다."),
+    DOCUMENT_OCR_COUNT_INVALID(HttpStatus.BAD_REQUEST, "DOCUMENT_4007", "OCR 처리할 문서 개수는 1개 이상 10개 이하이어야 합니다."),
+    DOCUMENT_OCR_TARGET_INVALID(HttpStatus.CONFLICT, "DOCUMENT_4092", "OCR 처리할 수 없는 문서 상태입니다."),
+    DOCUMENT_OCR_ALREADY_PROCESSING(HttpStatus.CONFLICT, "DOCUMENT_4093", "이미 OCR 처리가 진행 중인 문서입니다."),
+    PRESIGNED_URL_GENERATION_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "DOCUMENT_5031", "문서 업로드 URL 발급에 실패했습니다."),
+    OCR_REQUEST_FAILED(HttpStatus.BAD_GATEWAY, "OCR_5021", "OCR 서버 요청에 실패했습니다."),
+    OCR_RESPONSE_INVALID(HttpStatus.BAD_GATEWAY, "OCR_5022", "OCR 서버 응답이 올바르지 않습니다."),
+    OCR_RESULT_KEY_MISMATCH(HttpStatus.BAD_GATEWAY, "OCR_5023", "OCR 결과 저장 경로가 일치하지 않습니다."),
+    ANALYSIS_NOT_FOUND(HttpStatus.NOT_FOUND, "DOCUMENT_4043", "아직 해당 문서에 대한 분석 결과가 없습니다."),
+    DOCUMENT_ANALYZE_OCR_REQUIRED(HttpStatus.CONFLICT, "DOCUMENT_4094", "OCR 완료 후 분석할 수 있습니다."),
+    GEMINI_FIELD_EXTRACTION_FAILED(HttpStatus.BAD_GATEWAY, "GEMINI_5021", "Gemini 필드 추출 요청에 실패했습니다."),
+    GEMINI_RESPONSE_INVALID(HttpStatus.BAD_GATEWAY, "GEMINI_5022", "Gemini 응답이 올바르지 않습니다."),
+    GEMINI_REVIEW_STATUS_INVALID(HttpStatus.CONFLICT, "GEMINI_4091", "사용자 검증을 처리할 수 없는 분석 상태입니다."),
+    GEMINI_ANALYZE_STATUS_INVALID(HttpStatus.CONFLICT, "GEMINI_4092", "최종 분석을 실행할 수 없는 분석 상태입니다."),
 
     // YouTube
     YOUTUBE_API_FAILED(HttpStatus.BAD_GATEWAY, "YOUTUBE_API_FAILED", "YouTube API 호출에 실패했습니다."),
@@ -68,7 +102,11 @@ public enum ErrorCode implements BaseCode { // 실패
     TODO_DATE_REQUIRED(HttpStatus.BAD_REQUEST, "TODO_4007", "일반 투두는 날짜 입력이 필수입니다."),
     TODO_ROUTINE_TO_NORMAL_NOT_SUPPORTED(HttpStatus.BAD_REQUEST, "TODO_4008", "루틴 투두는 일반 투두로 변경할 수 없습니다. 필요하면 루틴 투두를 삭제하고 원하는 날짜로 일반 투두를 새로 생성해주세요."),
     TODO_DATE_NOT_FOUND(HttpStatus.NOT_FOUND, "TODO_4042", "해당 날짜의 투두 기록을 찾을 수 없습니다."),
-    ;
+
+    // Labor (노무사 관련)
+    PENDING_ALREADY_EXISTS(HttpStatus.CONFLICT, "LABOR_4091", "이미 노무사 승인 대기 중인 상태입니다."),
+    ALREADY_APPROVED_LABOR(HttpStatus.CONFLICT, "LABOR_4092", "이미 승인된 노무사 회원입니다.");
+
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;

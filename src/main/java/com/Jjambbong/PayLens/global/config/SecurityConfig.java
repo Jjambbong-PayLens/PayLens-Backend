@@ -4,6 +4,7 @@ import com.Jjambbong.PayLens.login.jwt.JwtValidationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -18,6 +19,7 @@ import java.util.List;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -37,12 +39,18 @@ public class SecurityConfig {
                                 "/login/oauth2/**",
 
                                 "/api/auth/kakao",
+                                "/api/auth/google",       // 구글 로그인 API 경로 추가
                                 "/api/auth/reissue",
                                 "/swagger-ui/**",
+                                "/swagger-ui.html",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
 
-                                "/health"
+                                "/health",
+                                "/api/consultation/**",
+                                "/api/consultants/**",
+                                "/api/test/**",
+                                "/api/notices/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

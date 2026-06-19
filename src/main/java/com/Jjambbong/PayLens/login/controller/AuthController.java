@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import com.Jjambbong.PayLens.global.api.ApiResponse;
 import com.Jjambbong.PayLens.global.api.SuccessCode;
 import com.Jjambbong.PayLens.login.dto.request.KakaoCodeRequest;
+import com.Jjambbong.PayLens.login.dto.request.GoogleCodeRequest;
 import com.Jjambbong.PayLens.login.dto.response.AuthResponse;
 import com.Jjambbong.PayLens.login.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,18 @@ public class AuthController {
 
         // 카카오 로그인: code로 카카오 토큰 발급 -> 유저 조회/저장 -> 우리 JWT 발급
         AuthResponse response = authService.handleKakaoCode(request.getCode());
+
+        return ApiResponse.onSuccess(SuccessCode.USER_LOGIN_SUCCESS, response);
+    }
+
+    @PostMapping("/google")
+    @Operation(summary = "구글 로그인 처리 (인가코드 전달)",
+            description = "프론트에서 전달한 구글 인가코드(code)로 자체 Access/Refresh Token을 발급합니다.")
+    public ApiResponse<AuthResponse> googleLogin(
+            @RequestBody GoogleCodeRequest request) {
+
+        // 구글 로그인: code로 구글 토큰 발급 -> 유저 조회/저장 -> 우리 JWT 발급
+        AuthResponse response = authService.handleGoogleCode(request.getCode());
 
         return ApiResponse.onSuccess(SuccessCode.USER_LOGIN_SUCCESS, response);
     }
